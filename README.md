@@ -15,7 +15,7 @@ login to Docker host and execute following command to create superuser
 Answer questions (username, email, password)
 
 
-# Create Virtual Environments (Ansible AWEX till version 17.1)
+# Create Virtual Environments (Ansible AWX till version 17.1)
 For AWX versions till 17.1.0 a Python virtual environment is used. Those can be installed with this playbook by setting `custom_venv` variable with a list of virtual environments to create.
 Also the path is needed `custom_venv_dir` that will be created on the host and linked to AWX container, this variable is then needed in AWX settings as custom_venv.
 
@@ -26,7 +26,7 @@ custom_venv_delete_before_install: false
 custom_venv_dir: /opt/awx/venv
 # Custom python dir, need to build different virtual env
 custom_python_dir: /opt/python
-custom_venvs: 
+custom_venvs:
   - name: ansible2_10_3
     python_version: 3.6.8
     ansible_pip_packages:
