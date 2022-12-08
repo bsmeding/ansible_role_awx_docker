@@ -1,15 +1,11 @@
 ---
 python_packages:
-  - name: docker
-    # version: 
-  - name: docker-compose
   - name: ansible
-    version: 6.4.0
-  - name: virtualenv
+    version: 4.10.0
 
 os_packages:
   - name: git
-    # version: 
+    # version:
   - name: nodejs
   - name: build-essential
   - name: gettext

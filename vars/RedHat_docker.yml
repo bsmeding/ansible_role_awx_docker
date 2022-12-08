@@ -1,9 +1,7 @@
 ---
 python_packages:
-  - name: docker
-    # version:
   - name: ansible # Only for install
-    version: 6.4.0
+    version: 4.10.0
 
 os_packages:
   - name: git
