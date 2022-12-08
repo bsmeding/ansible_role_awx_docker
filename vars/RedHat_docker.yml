@@ -1,0 +1,14 @@
+---
+python_packages:
+  - name: docker
+    # version: 
+
+os_packages:
+  - name: git
+    # version: 
+  - name: nodejs
+  - name: build-essential
+  - name: gettext
+  - name: g++
+  - name: bzip2
+  - name: openssl-devel

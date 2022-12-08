@@ -1,0 +1,32 @@
+---
+- name: Include OS-specific vars
+  include_vars: "{{ ansible_os_family }}_docker.yml"
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name={{ item.name }}
+    version={{ item.version | default(omit) }}
+    executable=pip3
+  with_items: "{{ python_packages }}"
+  tags:
+    - pip
+    - packages
+  become: false
+
+- name: Install packages for OS
+  ansible.builtin.package:
+    name={{ item.name }}
+    version={{ item.version | default(omit) }}
+  with_items: "{{ os_packages }}"
+
+- name: Install AWX version 17 or below
+  ansible.builtin.include_tasks: install_awx_docker_pre_v17.yml
+  when: not skip_awx_install|bool and (awx_version is version('18.0.0', '<'))
+
+- name: Install AWX above version v17
+  ansible.builtin.include_tasks: install_awx_docker.yml
+  when: not skip_awx_install|bool and (awx_version is version('17.1.0', '>'))
+
+- name: Install Custom VenV
+  include_tasks: awx_venv.yml
+  when: custom_venvs is defined and custom_venvs|length>0
