@@ -25,7 +25,7 @@
   tags:
     - pip
     - packages
-  become: false
+  become: true
 
 - name: Install packages for OS
   ansible.builtin.package:
