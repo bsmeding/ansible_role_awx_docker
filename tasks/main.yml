@@ -7,14 +7,14 @@
     name: pip
     executable: pip3
     version: latest
-  become: false
+  become: true
 
 - name: Install and upgrade setuptools
   ansible.builtin.pip:
     name: setuptools
     executable: pip3
     version: latest
-  become: false
+  become: true
 
 - name: Install pip packages
   ansible.builtin.pip:
