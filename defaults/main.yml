@@ -30,11 +30,21 @@ awx__receptor_image: quay.io/ansible/receptor:v1.2.3 # quay.io/ansible/receptor:
 
 
 # Only for version 17.1 and below:
-default_pip_packages:
+
+
+custom_venv_dir: /opt/awx/venv
+custom_venv_default_pip_packages:
   - pip
   - setuptools
   - psutil
-
-custom_venv_dir: /opt/awx/venv
-# Custom python dir, need to build different virtual env
+custom_venvs:
+  - name: ansible4_10
+    ansible_pip_packages:
+    - ansible==4.10.0
+    - ansible-lint
+    - pynautobot
+    - jmespath
+    - napalm
+    - netmiko
+    - paramiko
 custom_python_dir: /opt/python

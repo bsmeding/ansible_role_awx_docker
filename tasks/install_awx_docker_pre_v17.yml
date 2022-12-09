@@ -12,7 +12,7 @@
 #   ansible.builtin.file:
 #     path: "{{ awx_repo_dir }}"
 #     state: absent
-  
+
 
 - name: Clone AWX into configured directory
   ansible.builtin.git:
@@ -22,7 +22,7 @@
     update: "{{ awx_keep_updated }}"
     force: true
     accept_hostkey: true
-  changed_when: false 
+  changed_when: false
 
 - name: Change variables in installation inventory of AWX
   ansible.builtin.replace:
@@ -38,9 +38,9 @@
     - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^#alternate_dns_servers=.*$", replace: "alternate_dns_servers={{ awx__dns_servers }}" }
     - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^#admin_user=.*$", replace: "admin_user={{ awx__admin_user }}" }
     - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^# admin_password=.*$", replace: "admin_password={{ awx__admin_password }}" }
-  changed_when: false    
+  changed_when: false
   no_log: true
-  
+
 - name: Custom custom_venv_dir found - edit config and add docker-compose-override.yml
   block:
   # - name: Disable auto start containers in AWX playbook
@@ -62,7 +62,7 @@
       group: docker
       recurse: true
     become: true
-    when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0)    
+    when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0)
 
   - name: Create VenV python dir
     ansible.builtin.file:
@@ -73,7 +73,7 @@
       group: docker
       recurse: true
     become: true
-    when: custom_python_dir is defined and (custom_venvs is defined and custom_venvs|length>0)    
+    when: custom_python_dir is defined and (custom_venvs is defined and custom_venvs|length>0)
 
   - name: Change custom_venv_dir in inventory file
     ansible.builtin.replace:
@@ -89,8 +89,8 @@
 
 - name: remove docker-py if exist
   ansible.builtin.pip:
-    name: 
-      - docker-py 
+    name:
+      - docker-py
     state: absent
   become: true
 
@@ -98,4 +98,4 @@
   command: "ansible-playbook -i inventory install.yml"
   args:
     chdir: "{{ awx_repo_dir }}/installer"
-
+  become: false

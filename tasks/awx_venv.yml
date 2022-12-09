@@ -17,7 +17,7 @@
   loop: "{{ custom_venvs }}"
   become: true
   when: custom_venv_delete_before_install is defined and (custom_venv_delete_before_install|bool)
-    
+
 - name: Install specific Python version
   ansible.builtin.include_tasks: specific_python.yml
   vars:
@@ -27,7 +27,7 @@
 
 - name: Install default packages lastes version in custom VenV
   ansible.builtin.pip:
-    name: "{{ default_pip_packages | list }}"
+    name: "{{ custom_venv_default_pip_packages | list }}"
     virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
     state: latest
     virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"
