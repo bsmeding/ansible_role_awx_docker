@@ -5,7 +5,7 @@
 - name: Install pip packages
   ansible.builtin.pip:
     name={{ item.name }}
-    version={{ item.version | default(omit) }}
+    version={{ item.version | default('latest') }}
     executable=pip3
   with_items: "{{ python_packages }}"
   tags:
