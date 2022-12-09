@@ -2,11 +2,13 @@
 - name: Include OS-specific vars
   include_vars: "{{ ansible_os_family }}_docker.yml"
 
-- name: Update pip package
+- name: Install and upgrade pip
   ansible.builtin.pip:
-    name=pip
-    version=latest
-    executable=pip3
+    name:
+      - pip
+      - setuptools
+    executable: pip3
+    version: latest
   become: false
 
 - name: Install pip packages
