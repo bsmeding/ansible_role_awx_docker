@@ -33,6 +33,19 @@
     version={{ item.version | default(omit) }}
   with_items: "{{ os_packages }}"
 
+- name: Install the latest version of Python3.9 RHEL
+  ansible.builtin.dnf:
+    name: python3.9
+    state: latest
+  when: ansible_os_family == RedHat
+
+- name: Remove Python 3.6 from RHEL
+  ansible.builtin.dnf:
+    name: python3.6
+    state: absent
+  when: ansible_os_family == RedHat
+
+
 - name: Install Custom VenV (only for version below 18.0.0)
   include_tasks: awx_venv.yml
   when: custom_venvs is defined and custom_venvs|length>0 and (awx_version is version('18.0.0', '<'))
