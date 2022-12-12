@@ -47,6 +47,7 @@
       DEV_DOCKER_TAG_BASE: "{{ awx__dev_docker_tag_base | default('ansible') }}"
       COMPOSE_TAG: "{{ awx_version }}"
       # RECEPTOR_IMAGE: "{{ awx__receptor_image | default('quay.io/ansible/receptor:devel') }}"
+  become: true
 
 - name: Make docker-compose and run containers
   community.general.make:
@@ -57,6 +58,7 @@
       COMPOSE_TAG: "{{ awx_version }}"
       COMPOSE_UP_OPTS: -d
   register: run_docker_containers
+  become: true
 # - name: Run all containers
 #   community.docker.docker_compose:
 #     project_src: "{{ awx_repo_dir }}/tools/docker-compose/_sources/"
@@ -71,6 +73,7 @@
     command: make clean-ui ui-devel
   register: result_awx_ui_clean
   when: run_docker_containers.changed
+  become: true
 
 - name: Show result of build and clean
   debug:
