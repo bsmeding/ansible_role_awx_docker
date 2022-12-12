@@ -5,7 +5,7 @@ awx__port_web_https: 9443
 awx__dns_servers: "8.8.8.8,8.8.4.4"
 awx__admin_user: admin
 awx__admin_password: password
-
+awx__install_as_root: true
 
 ## VERSION AWX 17.1.0 AND LOWER:
 awx_repo: https://github.com/ansible/awx.git

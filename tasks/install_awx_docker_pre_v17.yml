@@ -107,7 +107,7 @@
       dest: "{{ docker_compose_dir }}/docker-compose.override.yml"
   when: custom_venv_dir is defined
 
-- name: remove docker-py if exist
+- name: remove docker-py if exist (conflicting package)
   ansible.builtin.pip:
     name:
       - docker-py
@@ -118,4 +118,4 @@
   command: "ansible-playbook -i inventory install.yml"
   args:
     chdir: "{{ awx_repo_dir }}/installer"
-  become: false
+  become: "{{ awx__install_as_root }}"
