@@ -24,7 +24,7 @@
     name: ansible
     version: latest
     extra_args: --user
-    umask: 0022
+    umask: "0022"
   become: "{{ awx__install_as_root }}"
 
 - name: Install OS specific pip packages
