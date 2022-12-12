@@ -71,8 +71,8 @@
       owner: root # AWX Runs as user/group root
       group: docker
       recurse: true
-      become: true
-      
+    become: true
+
   - name: Create VenV root {{ custom_venv_dir }} directory
     ansible.builtin.file:
       path: "{{ custom_venv_dir }}"
