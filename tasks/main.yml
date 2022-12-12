@@ -11,8 +11,8 @@
 
 - name: Install default pip packages
   ansible.builtin.pip:
-    name={{ item.name }}
-    version={{ item.version | default('latest') }}
+    name={{ item }}
+    version=latest
     executable=pip3
     extra_args=--user
     umask=0022
