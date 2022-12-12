@@ -37,14 +37,14 @@ custom_venv_default_pip_packages:
   - pip
   - setuptools
   - psutil
-# custom_venvs:
-#   - name: ansible4_10
-#     ansible_pip_packages:
-#     - ansible==4.10.0
-#     - ansible-lint
-#     - pynautobot
-#     - jmespath
-#     - napalm
-#     - netmiko
-#     - paramiko
+custom_venvs:
+  - name: ansible4_10
+    ansible_pip_packages:
+    - ansible==4.10.0
+    - ansible-lint
+    - pynautobot
+    - jmespath
+    - napalm
+    - netmiko
+    - paramiko
 custom_python_dir: /opt/python

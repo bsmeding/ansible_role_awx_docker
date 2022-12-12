@@ -43,6 +43,19 @@
   no_log: true
   become: false
 
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root # AWX Runs as user/group root
+    group: docker
+    recurse: true
+  become: true
+  with_items:
+    - "{{ awx__postgres_data_dir }}"
+    - "{{ awx__project_data_dir }}"
+
 - name: Custom custom_venv_dir found - edit config and add docker-compose-override.yml
   block:
   # - name: Disable auto start containers in AWX playbook
