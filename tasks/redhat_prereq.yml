@@ -1,0 +1,31 @@
+sudo dnf install python3-pip python3-wheel
+- name: Install prerequestics for RHEL
+  block:
+  - name: Install the latest version of Python3.9 RHEL
+    ansible.builtin.dnf:
+      name: python3.9
+      state: latest
+
+  - name: Set python alternatives
+    community.general.alternatives:
+      name: python
+      path: /bin/python3.9
+
+  - name: Install the latest version of python3-pip
+    ansible.builtin.dnf:
+      name: python3-pip
+      state: latest
+
+  - name: Install the latest version of python3-wheel
+    ansible.builtin.dnf:
+      name: python3-wheel
+      state: latest
+
+# - name: Remove Python 3.6 from RHEL
+#   ansible.builtin.dnf:
+#     name: python3.6
+#     state: absent
+#   when: "ansible_os_family == 'RedHat'"
+#   become: true
+
+  become: true

@@ -2,6 +2,10 @@
 - name: Include OS-specific vars
   include_vars: "{{ ansible_os_family }}_docker.yml"
 
+- name: Install RedHet prerequistics
+  include_tasks: redhat_prereq.yml
+  when: "ansible_os_family == 'RedHat'"
+  
 - name: Install packages for OS
   ansible.builtin.package:
     name={{ item.name }}
@@ -32,19 +36,7 @@
     - packages
   become: "{{ awx__install_as_root }}"
 
-- name: Install the latest version of Python3.9 RHEL
-  ansible.builtin.dnf:
-    name: python3.9
-    state: latest
-  when: "ansible_os_family == 'RedHat'"
-  become: true
 
-# - name: Remove Python 3.6 from RHEL
-#   ansible.builtin.dnf:
-#     name: python3.6
-#     state: absent
-#   when: "ansible_os_family == 'RedHat'"
-#   become: true
 
 - name: Install Custom VenV (only for version below 18.0.0)
   include_tasks: awx_venv.yml
