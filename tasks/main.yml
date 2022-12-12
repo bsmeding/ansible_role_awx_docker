@@ -9,10 +9,10 @@
   with_items: "{{ os_packages }}"
   become: true
 
-- name: Install Ansible on OS
+- name: Install Ansible on RHEL with Package instead of pip
   ansible.builtin.package:
     name: ansible
-    state: "{{ ansible_package_state }}"
+    state: "present"
     enablerepo: epel
   when: "ansible_os_family == 'RedHat'"
 
