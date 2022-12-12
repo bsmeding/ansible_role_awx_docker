@@ -1,9 +1,9 @@
 ---
 python_packages:
   - name: ansible
-    version: 4.10.0
+    version: 2.10.7
   - name: docker-compose
-  
+
 os_packages:
   - name: git
     # version:
