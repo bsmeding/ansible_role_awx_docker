@@ -9,13 +9,6 @@
   with_items: "{{ os_packages }}"
   become: true
 
-- name: Install Ansible on RHEL with Package instead of pip
-  ansible.builtin.package:
-    name: ansible
-    state: "present"
-    enablerepo: epel
-  when: "ansible_os_family == 'RedHat'"
-
 - name: Install default pip packages
   ansible.builtin.pip:
     name={{ item }}
@@ -38,8 +31,6 @@
     - pip
     - packages
   become: "{{ awx__install_as_root }}"
-
-
 
 - name: Install the latest version of Python3.9 RHEL
   ansible.builtin.dnf:
