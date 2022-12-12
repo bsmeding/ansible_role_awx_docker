@@ -9,6 +9,13 @@
   with_items: "{{ os_packages }}"
   become: true
 
+- name: Install Ansible on OS
+  ansible.builtin.package:
+    name: ansible
+    state: "{{ ansible_package_state }}"
+    enablerepo: epel
+  when: "ansible_os_family == 'RedHat'"
+
 - name: Install default pip packages
   ansible.builtin.pip:
     name={{ item }}

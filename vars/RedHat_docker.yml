@@ -1,7 +1,5 @@
 ---
 python_packages:
-  - name: ansible # Only for install
-    version: 2.10.7
   - name: docker-compose
 
 os_packages:
