@@ -12,7 +12,7 @@
 - name: Install default pip packages
   ansible.builtin.pip:
     name={{ item }}
-    version=latest
+    state=forcereinstall
     executable=pip3
     extra_args=--user
     umask=0022
