@@ -2,7 +2,8 @@
 python_packages:
   - name: ansible # Only for install
     version: 4.10.0
-
+  - name: docker-compose
+  
 os_packages:
   - name: build-essential
   - name: python3-virtualenv
