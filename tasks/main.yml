@@ -7,13 +7,15 @@
     name: pip
     executable: pip3
     version: latest
-  become: false
+    extra_args: "--user"
+  become: "{{ awx__install_as_root }}"
 
 - name: Install and upgrade setuptools
   ansible.builtin.pip:
     name: setuptools
     executable: pip3
     version: latest
+    extra_args: "--user"
   become: "{{ awx__install_as_root }}"
 
 - name: Install pip packages
@@ -21,6 +23,7 @@
     name={{ item.name }}
     version={{ item.version | default('latest') }}
     executable=pip3
+    extra_args="--user"
   with_items: "{{ python_packages }}"
   tags:
     - pip
