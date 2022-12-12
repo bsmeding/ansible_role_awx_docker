@@ -6,7 +6,9 @@ python_packages:
 
 os_packages:
   - name: '@Development tools'
+  - name: python3-pip
   - name: gettext
   - name: gcc-c++
   - name: bzip2
   - name: libselinux-python3
+  - name: git

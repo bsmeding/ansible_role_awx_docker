@@ -27,7 +27,7 @@
 
 - name: Install default packages lastes version in custom VenV
   ansible.builtin.pip:
-    name: "{{ custom_venv_default_pip_packages | list }}"
+    name: "{{ default_pip_packages | list }}"
     virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
     state: latest
     virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"

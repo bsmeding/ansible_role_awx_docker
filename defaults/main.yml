@@ -21,7 +21,10 @@ docker_compose_dir: /opt/awx/docker_compose
 awx__postgres_data_dir: /opt/awx/pgdocker
 awx__project_data_dir: /opt/awx/projects
 # !! TODO: Disable Demo data in inventory file
-
+default_pip_packages:
+  - pip
+  - setuptools
+  - psutil
 
 
 ## VERTSION >18 and up
@@ -37,10 +40,6 @@ awx__receptor_image: quay.io/ansible/receptor:v1.2.3 # quay.io/ansible/receptor:
 
 
 custom_venv_dir: /opt/awx/venv
-custom_venv_default_pip_packages:
-  - pip
-  - setuptools
-  - psutil
 custom_venvs: []
   # - name: ansible4_10
   #   ansible_pip_packages:

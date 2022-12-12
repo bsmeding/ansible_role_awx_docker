@@ -2,18 +2,21 @@
 - name: Include OS-specific vars
   include_vars: "{{ ansible_os_family }}_docker.yml"
 
-- name: Install and upgrade pip
-  ansible.builtin.pip:
-    name: pip
-    version: latest
-    extra_args: --user
-  become: "{{ awx__install_as_root }}"
+- name: Install packages for OS
+  ansible.builtin.package:
+    name={{ item.name }}
+    version={{ item.version | default(omit) }}
+  with_items: "{{ os_packages }}"
+  become: true
 
-- name: Install and upgrade setuptools
+- name: Install default pip packages
   ansible.builtin.pip:
-    name: setuptools
-    version: latest
-    extra_args: --user
+    name={{ item.name }}
+    version={{ item.version | default('latest') }}
+    executable=pip3
+    extra_args=--user
+    umask=0022
+  with_items: "{{ default_pip_packages }}"
   become: "{{ awx__install_as_root }}"
 
 - name: Install and upgrade ansible
@@ -21,26 +24,23 @@
     name: ansible
     version: latest
     extra_args: --user
+    umask: 0022
   become: "{{ awx__install_as_root }}"
 
-- name: Install pip packages
+- name: Install OS specific pip packages
   ansible.builtin.pip:
     name={{ item.name }}
     version={{ item.version | default('latest') }}
     executable=pip3
     extra_args=--user
+    umask=0022
   with_items: "{{ python_packages }}"
   tags:
     - pip
     - packages
   become: "{{ awx__install_as_root }}"
 
-- name: Install packages for OS
-  ansible.builtin.package:
-    name={{ item.name }}
-    version={{ item.version | default(omit) }}
-  with_items: "{{ os_packages }}"
-  become: true
+
 
 - name: Install the latest version of Python3.9 RHEL
   ansible.builtin.dnf:
@@ -49,12 +49,12 @@
   when: "ansible_os_family == 'RedHat'"
   become: true
 
-- name: Remove Python 3.6 from RHEL
-  ansible.builtin.dnf:
-    name: python3.6
-    state: absent
-  when: "ansible_os_family == 'RedHat'"
-  become: true
+# - name: Remove Python 3.6 from RHEL
+#   ansible.builtin.dnf:
+#     name: python3.6
+#     state: absent
+#   when: "ansible_os_family == 'RedHat'"
+#   become: true
 
 - name: Install Custom VenV (only for version below 18.0.0)
   include_tasks: awx_venv.yml
