@@ -12,10 +12,16 @@
 
 - name: remove docker-py if exist
   ansible.builtin.pip:
-    name: 
-      - docker-py 
+    name:
+      - docker-py
     state: absent
   become: true
+
+- name: check if wheel is vavailable
+  ansible.builtin.pip:
+    name:
+      - wheel
+    state: latest
 
 
 - name: Clone AWX into configured directory
@@ -26,7 +32,7 @@
     update: "{{ awx_keep_updated }}"
     force: true
     accept_hostkey: true
-  changed_when: false 
+  changed_when: false
 
 - name: Check if correct receptor image is available
   community.docker.docker_image:
@@ -61,7 +67,7 @@
 
 - name: Build and clean UI (can take up to 10 minutes!)
   community.docker.docker_container_exec:
-    container: tools_awx_1 
+    container: tools_awx_1
     command: make clean-ui ui-devel
   register: result_awx_ui_clean
   when: run_docker_containers.changed

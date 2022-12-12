@@ -1,9 +1,9 @@
 ---
 python_packages:
   - name: ansible
-    version: 2.10.7  
+    version: 2.10.7
   - name: docker-compose
-
+  
 os_packages:
   - name: '@Development tools'
   - name: python3-pip
