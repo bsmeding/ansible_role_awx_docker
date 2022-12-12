@@ -18,6 +18,14 @@
     extra_args: "--user"
   become: "{{ awx__install_as_root }}"
 
+- name: Install and upgrade ansible
+  ansible.builtin.pip:
+    name: ansible
+    executable: pip3
+    version: latest
+    extra_args: "--user"
+  become: "{{ awx__install_as_root }}"
+
 - name: Install pip packages
   ansible.builtin.pip:
     name={{ item.name }}
