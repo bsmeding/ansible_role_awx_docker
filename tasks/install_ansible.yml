@@ -1,0 +1,6 @@
+- name: Install Ansible via Pip
+  ansible.builtin.pip:
+    name: ansible
+    version: "{{ ansible_install_version_pip | default(omit) }}"
+    extra_args: "{{ ansible_install_pip_extra_args | default(omit) }}"
+  become: "{{ awx__install_as_root }}"

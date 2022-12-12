@@ -113,9 +113,20 @@
 #       - docker-py
 #     state: absent
 #   become: "{{ awx__install_as_root }}"
+- name: Check if playbook has been run before.
+  stat:
+    path: "{{ docker_compose_dir }}/awx_playbook_complete"
+  register: awx_playbook_already_run
 
 - name: Run the AWX installation playbook
   command: "ansible-playbook -i inventory install.yml"
   args:
     chdir: "{{ awx_repo_dir }}/installer"
+    creates: "{{ docker_compose_dir }}/awx_playbook_complete"
   become: "{{ awx__install_as_root }}"
+  
+- name: Create a file to mark whether this playbook has completed.
+  file:
+    path: "{{ docker_compose_dir }}/awx_playbook_complete"
+    state: touch
+  changed_when: false

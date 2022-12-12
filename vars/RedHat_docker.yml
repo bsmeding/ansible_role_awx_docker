@@ -5,11 +5,8 @@ python_packages:
   - name: docker-compose
 
 os_packages:
-  - name: git
-    # version:
-  - name: nodejs
+  - name: '@Development tools'
   - name: gettext
+  - name: gcc-c++
   - name: bzip2
-  - name: openssl-devel
-  - name: python3
-  - name: python3-virtualenv
+  - name: libselinux-python3
