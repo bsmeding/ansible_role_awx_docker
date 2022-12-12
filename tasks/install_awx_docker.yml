@@ -22,7 +22,7 @@
     name:
       - wheel
     state: latest
-
+  become: true
 
 - name: Clone AWX into configured directory
   ansible.builtin.git:
