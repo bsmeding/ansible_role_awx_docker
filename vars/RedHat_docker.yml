@@ -3,7 +3,7 @@ python_packages:
   - name: setuptools_rust
   - name: wheel
   - name: docker-compose
-  
+
 os_packages:
   - name: '@Development tools'
   - name: git
@@ -18,3 +18,4 @@ os_packages:
   - name: python3-pip
   - name: wget
   - name: nano
+  - name: virtualenv
