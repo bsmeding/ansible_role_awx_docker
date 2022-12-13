@@ -1,4 +1,4 @@
-sudo dnf install python3-pip python3-wheel
+
 - name: Install prerequestics for RHEL
   block:
   - name: Install the latest version of Python3.9 RHEL
@@ -6,7 +6,7 @@ sudo dnf install python3-pip python3-wheel
       name: python3.9
       state: latest
 
-  - name: Set python alternatives
+  - name: Set python alternatives to 3.9
     community.general.alternatives:
       name: python
       path: /bin/python3.9
