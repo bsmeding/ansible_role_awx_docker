@@ -1,7 +1,7 @@
 - name: Set AWX Base settings
   awx.awx.settings:
     controller_host: "awx_task"
-    validate_certs: "{{ awx_validate_certs }}"
+    validate_certs: "{{ awx__validate_certs | default('false') }}"
     controller_username: "{{ awx__admin_user }}"
     controller_password: "{{ awx__admin_password }}"
     settings:
