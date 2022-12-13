@@ -1,0 +1,11 @@
+- name: Set AWX Base settings
+  awx.awx.settings:
+    controller_host: "awx_task"
+    validate_certs: "{{ awx_validate_certs }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    settings:
+      TOWER_URL_BASE: "http://awx.dev.infra.coa.local"
+      ORG_ADMINS_CAN_SEE_ALL_USERS: "true"
+      CUSTOM_VENV_PATHS:
+        - "{{ custom_venv_dir }}"

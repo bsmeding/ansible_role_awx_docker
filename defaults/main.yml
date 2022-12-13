@@ -2,6 +2,7 @@
 # GLOBAL SETTINGS
 awx__port_web_http: 9080
 awx__port_web_https: 9443
+awx__base_url: 'http://localhost'
 awx__dns_servers: "8.8.8.8,8.8.4.4"
 awx__admin_user: admin
 awx__admin_password: password

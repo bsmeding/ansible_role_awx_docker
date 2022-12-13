@@ -1,8 +1,12 @@
 
 
 
+# Dependencies:
+Install collection awx.awx for configuration of AWX after installation
+`ansible-galaxy collection install awx.awx`
 
-# Ansible a8 and up
+
+# Ansible 18 and up
 
 
 
