@@ -49,18 +49,26 @@
   become: "{{ awx__install_as_root }}"
 
 
-- name: Create directories
+- name: Create project data dir
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ awx__project_data_dir }}"
     state: directory
     mode: "0775"
     owner: root # AWX Runs as user/group root
     group: root
     recurse: true
   become: true
-  with_items:
-    - "{{ awx__postgres_data_dir }}"
-    - "{{ awx__project_data_dir }}"
+
+# TODO: Change to Docker volume, more secure!
+- name: Create directories postgres data dir
+  ansible.builtin.file:
+    path: "{{ awx__postgres_data_dir }}"
+    state: directory
+    mode: "0777"
+    owner: root # AWX Runs as user/group root
+    group: root
+    recurse: true
+  become: true
 
 - name: Custom custom_venv_dir found - edit config and add docker-compose-override.yml
   block:
