@@ -6,10 +6,11 @@
       name: python3.9
       state: latest
 
-  - name: Set python alternatives to 3.9
-    community.general.alternatives:
-      name: python
-      path: /bin/python3.9
+  # - name: Set python alternatives to 3.9
+  #   community.general.alternatives:
+  #     link: /usr/bin/python3
+  #     name: python
+  #     path: /usr/bin/python3.9
 
   - name: Install the latest version of python3-pip
     ansible.builtin.dnf:
