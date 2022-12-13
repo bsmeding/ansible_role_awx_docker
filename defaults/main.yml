@@ -6,6 +6,7 @@ awx__base_url: 'http://localhost'
 awx__dns_servers: "8.8.8.8,8.8.4.4"
 awx__admin_user: admin
 awx__admin_password: password
+awx__validate_certs: false
 
 ## VERSION AWX 17.1.0 AND LOWER:
 awx_repo: https://github.com/ansible/awx.git
