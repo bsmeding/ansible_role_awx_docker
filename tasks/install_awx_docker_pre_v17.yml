@@ -55,7 +55,7 @@
     state: directory
     mode: "0775"
     owner: root # AWX Runs as user/group root
-    group: docker
+    group: root
     recurse: true
   become: true
   with_items:
