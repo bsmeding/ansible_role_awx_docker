@@ -33,7 +33,7 @@
     virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"
     #virtualenv_python: "{{ omit if item.python_version is not defined or (custom_python_dir + '/Python-'+ item.python_version + '/python3') }}"
     virtualenv_python: "{% if item.python_version is defined %}{{ custom_python_dir }}/Python-{{ item.python_version  }}/bin/python3{% else %}/usr/bin/python3{% endif %}"
-    # virtualenv_command: "{{ python_venv_command }}"
+    virtualenv_command: "{{ python_venv_command }}"
     umask: "0022"
   become: false
   loop: "{{ custom_venvs }}"
@@ -45,7 +45,7 @@
     virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"
     #virtualenv_python: "{{ omit if item.python_version is not defined or (custom_python_dir + '/Python-'+ item.python_version + '/python3') }}"
     virtualenv_python: "{% if item.python_version is defined %}{{ custom_python_dir }}/Python-{{ item.python_version  }}/bin/python3{% else %}/usr/bin/python3{% endif %}"
-    # virtualenv_python: '/opt/python/Python-3.9.8/bin/python3'
+    virtualenv_command: "{{ python_venv_command }}"
     umask: "0022"
   become: false
   loop: "{{ custom_venvs }}"
