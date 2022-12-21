@@ -38,3 +38,40 @@ custom_venvs: []
   #   - netmiko
   #   - paramiko
 custom_python_dir: /opt/python
+
+
+## LDAP CONFIG
+
+
+
+## DEFAULT LDAP SERVER
+# awx__ldap_server_uri: ldap://ldap.example.com:3380
+# awx__ldap_bind_dn: CN=readonly,OU=people,DC=example,DC=com
+# awx__ldap_bind_password: password
+# awx__ldap_group_type: NestedMemberDNGroupType
+# awx__ldap_user_dn_template: uid=%(user)s,ou=people,dc=example,dc=com
+# awx__ldap_require_group: cn=AWX,ou=groups,dc=example,dc=com
+# awx__ldap_deny_group: ''
+# awx__ldap_user_search: []
+# awx__ldap_group_search: []
+# awx__ldap_user_attr_map: {}
+# awx__ldap_group_type_parameters: {}
+# awx__ldap_user_flags_by_group: {}
+# awx__ldap_organization_map: {}
+# awx__ldap_team_map: {}
+
+## SECONDARY LDAP SERVER, PREFIXED WITH _1_ IN VARIABLE
+# awx__ldap_1_server_uri: ldap://ldap.example.com:3380
+# awx__ldap_1_bind_dn: CN=readonly,OU=people,DC=example,DC=com
+# awx__ldap_1_bind_password: password
+# awx__ldap_1_group_type: NestedMemberDNGroupType
+# awx__ldap_1_user_dn_template: uid=%(user)s,ou=people,dc=example,dc=com
+# awx__ldap_1_require_group: cn=AWX,ou=groups,dc=example,dc=com
+# awx__ldap_1_deny_group: ''
+# awx__ldap_1_user_search: []
+# awx__ldap_1_group_search: []
+# awx__ldap_1_user_attr_map: {}
+# awx__ldap_1_group_type_parameters: {}
+# awx__ldap_1_user_flags_by_group: {}
+# awx__ldap_1_organization_map: {}
+# awx__ldap_1_team_map: {}
