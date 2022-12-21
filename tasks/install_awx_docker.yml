@@ -7,7 +7,7 @@
 - name: check if version is correct for Docker installation
   ansible.builtin.assert:
     that:
-      - awx_version is version_compare('17.1.0', '>', strict=true)
+      - awx__version is version_compare('17.1.0', '>', strict=true)
     fail_msg: "Only AWX version above 17.1.0 are possible with this role"
 
 - name: remove docker-py if exist
@@ -26,10 +26,10 @@
 
 - name: Clone AWX into configured directory
   ansible.builtin.git:
-    repo: "{{ awx_repo }}"
-    dest: "{{ awx_repo_dir }}"
-    version: "{{ awx_version }}"
-    update: "{{ awx_keep_updated }}"
+    repo: "{{ awx__repo }}"
+    dest: "{{ awx__repo_dir }}"
+    version: "{{ awx__version }}"
+    update: "{{ awx__keep_updated }}"
     force: true
     accept_hostkey: true
   changed_when: false
@@ -41,27 +41,27 @@
 
 - name: Make docker-compose-build
   community.general.make:
-    chdir: "{{ awx_repo_dir }}"
+    chdir: "{{ awx__repo_dir }}"
     target: docker-compose-build
     params:
       DEV_DOCKER_TAG_BASE: "{{ awx__dev_docker_tag_base | default('ansible') }}"
-      COMPOSE_TAG: "{{ awx_version }}"
+      COMPOSE_TAG: "{{ awx__version }}"
       # RECEPTOR_IMAGE: "{{ awx__receptor_image | default('quay.io/ansible/receptor:devel') }}"
   become: true
 
 - name: Make docker-compose and run containers
   community.general.make:
-    chdir: "{{ awx_repo_dir }}"
+    chdir: "{{ awx__repo_dir }}"
     target: docker-compose
     params:
       DEV_DOCKER_TAG_BASE: "{{ awx__dev_docker_tag_base | default('ansible') }}"
-      COMPOSE_TAG: "{{ awx_version }}"
+      COMPOSE_TAG: "{{ awx__version }}"
       COMPOSE_UP_OPTS: -d
   register: run_docker_containers
   become: true
 # - name: Run all containers
 #   community.docker.docker_compose:
-#     project_src: "{{ awx_repo_dir }}/tools/docker-compose/_sources/"
+#     project_src: "{{ awx__repo_dir }}/tools/docker-compose/_sources/"
 #     build: false
 #     pull: false
 #     remove_orphans: true

@@ -8,7 +8,7 @@ Install collection awx.awx for configuration of AWX after installation
 
 # Ansible 18 and up
 
-
+Currently not supported yet!
 
 
 

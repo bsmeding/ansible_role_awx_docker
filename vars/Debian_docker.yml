@@ -25,4 +25,4 @@ os_packages:
   - name: openssl
   - name: libffi-dev
 
-python_venv_command: virtualenv
+# python_venv_command: virtualenv

@@ -4,22 +4,22 @@
 - name: check if version is correct for Docker installation
   ansible.builtin.assert:
     that:
-      - awx_version is version_compare('17.1.0', '<=', strict=true)
+      - awx__version is version_compare('17.1.0', '<=', strict=true)
     fail_msg: "Only AWX version 17.1.0 are possible with this role"
 
 
 # - name: Clean GIT repo
 #   ansible.builtin.file:
-#     path: "{{ awx_repo_dir }}"
+#     path: "{{ awx__repo_dir }}"
 #     state: absent
 
 
 - name: Clone AWX into configured directory
   ansible.builtin.git:
-    repo: "{{ awx_repo }}"
-    dest: "{{ awx_repo_dir }}"
-    version: "{{ awx_version }}"
-    update: "{{ awx_keep_updated }}"
+    repo: "{{ awx__repo }}"
+    dest: "{{ awx__repo_dir }}"
+    version: "{{ awx__version }}"
+    update: "{{ awx__keep_updated }}"
     force: true
     accept_hostkey: true
   changed_when: false
@@ -36,14 +36,14 @@
     regexp: "{{ item.regexp }}"
     replace: "{{ item.replace }}"
   with_items:
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^postgres_data_dir=.*$", replace: "postgres_data_dir={{ awx__postgres_data_dir }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^host_port=.*$", replace: "host_port={{ awx__port_web_http }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^host_port_ssl=.*$", replace: "host_port_ssl={{ awx__port_web_https }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^docker_compose_dir=.*$", replace: "docker_compose_dir={{ docker_compose_dir }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^#project_data_dir=.*$", replace: "project_data_dir={{ awx__project_data_dir }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^#alternate_dns_servers=.*$", replace: "alternate_dns_servers={{ awx__dns_servers }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^#admin_user=.*$", replace: "admin_user={{ awx__admin_user }}" }
-    - { dest: "{{ awx_repo_dir }}/installer/inventory", regexp: "^# admin_password=.*$", replace: "admin_password={{ awx__admin_password }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^postgres_data_dir=.*$", replace: "postgres_data_dir={{ awx__postgres_data_dir }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^host_port=.*$", replace: "host_port={{ awx__port_web_http }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^host_port_ssl=.*$", replace: "host_port_ssl={{ awx__port_web_https }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^docker_compose_dir=.*$", replace: "docker_compose_dir={{ docker_compose_dir }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^#project_data_dir=.*$", replace: "project_data_dir={{ awx__project_data_dir }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^#alternate_dns_servers=.*$", replace: "alternate_dns_servers={{ awx__dns_servers }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^#admin_user=.*$", replace: "admin_user={{ awx__admin_user }}" }
+    - { dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^# admin_password=.*$", replace: "admin_password={{ awx__admin_password }}" }
   changed_when: false
   no_log: true
   become: "{{ awx__install_as_root }}"
@@ -111,7 +111,7 @@
 
   - name: Change custom_venv_dir in inventory file
     ansible.builtin.replace:
-      dest: "{{ awx_repo_dir }}/installer/inventory"
+      dest: "{{ awx__repo_dir }}/installer/inventory"
       regexp: "^#custom_venv_dir=.*$"
       replace: "custom_venv_dir={{ custom_venv_dir }}"
 
@@ -132,7 +132,7 @@
 - name: Run the AWX installation playbook
   command: "ansible-playbook -i inventory install.yml"
   args:
-    chdir: "{{ awx_repo_dir }}/installer"
+    chdir: "{{ awx__repo_dir }}/installer"
     creates: "{{ docker_compose_dir }}/awx_playbook_complete"
   become: "{{ awx__install_as_root }}"
 

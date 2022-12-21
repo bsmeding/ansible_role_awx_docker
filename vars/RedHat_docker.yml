@@ -17,8 +17,9 @@ os_packages:
   - name: lvm2
   - name: bzip2
   - name: python3-pip
+  - name: python3-virtualenv
   - name: wget
   - name: nano
   # - name: virtualenv
 
-python_venv_command: 'python3 -m venv'
+# python_venv_command: 'python3 -m venv'
