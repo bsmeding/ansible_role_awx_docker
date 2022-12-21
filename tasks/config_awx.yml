@@ -17,8 +17,8 @@
   awx.awx.settings:
     controller_host: "http://localhost:{{ awx__port_web_http }}"
     validate_certs: "{{ awx__validate_certs | default(true) }}"
-    controller_username: "{{ awx__username }}"
-    controller_password: "{{ awx__password }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
     settings:
       AUTH_LDAP_SERVER_URI: "{{ awx__ldap_server_uri | default(omit) }}"
       AUTH_LDAP_BIND_DN: "{{ awx__ldap_bind_dn | default(omit) }}"
@@ -40,8 +40,8 @@
   awx.awx.settings:
     controller_host: "http://localhost:{{ awx__port_web_http }}"
     validate_certs: "{{ awx__validate_certs | default(true) }}"
-    controller_username: "{{ awx__username }}"
-    controller_password: "{{ awx__password }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
     settings:
       AUTH_LDAP_1_SERVER_URI: "{{ awx__ldap_1_server_uri | default(omit) }}"
       AUTH_LDAP_1_BIND_DN: "{{ awx__ldap_1_bind_dn | default(omit) }}"
