@@ -3,6 +3,7 @@ python_packages:
   - name: setuptools_rust
   - name: wheel
   - name: docker-compose
+  - name: virtualenv
 
 os_packages:
   - name: '@Development tools'
@@ -18,4 +19,6 @@ os_packages:
   - name: python3-pip
   - name: wget
   - name: nano
-  - name: virtualenv
+  # - name: virtualenv
+
+python_venv_command: 'python3 -m venv'

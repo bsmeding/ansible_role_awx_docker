@@ -22,12 +22,4 @@
     ansible.builtin.dnf:
       name: python3-wheel
       state: latest
-
-# - name: Remove Python 3.6 from RHEL
-#   ansible.builtin.dnf:
-#     name: python3.6
-#     state: absent
-#   when: "ansible_os_family == 'RedHat'"
-#   become: true
-
   become: true

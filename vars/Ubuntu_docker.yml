@@ -13,3 +13,5 @@ os_packages:
   - name: g++
   - name: bzip2
   - name: openssl-devel
+
+python_venv_command: virtualenv

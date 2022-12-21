@@ -24,3 +24,5 @@ os_packages:
   - name: bzip2
   - name: openssl
   - name: libffi-dev
+
+python_venv_command: virtualenv
