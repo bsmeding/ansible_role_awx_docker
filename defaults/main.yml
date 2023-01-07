@@ -42,10 +42,19 @@ custom_venvs: []
 custom_python_dir: /opt/python
 
 
+# OPTIONAL, CONFIGURE AWX WITH SETTINGS:
+# Organizations
+awx__organizations: []
+  # - name: MyOrg
+  #   # custom_virtualenv: ansible3
+  #   teams:
+  #   - name: DevOps
+  #     description: DevOps
+  #   - name: Support
+  #     description: Support
+
+
 ## LDAP CONFIG
-
-
-
 ## DEFAULT LDAP SERVER
 # awx__ldap_server_uri: ldap://ldap.example.com:3380
 # awx__ldap_bind_dn: CN=readonly,OU=people,DC=example,DC=com

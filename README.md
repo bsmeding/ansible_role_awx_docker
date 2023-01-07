@@ -117,4 +117,20 @@ awx__ldap_team_map: {
   }
 }
 
-``
+```
+
+
+
+# Organization and Teams
+
+To add organizations and/or Teams, add the following variables:
+```
+awx__organizations:
+  - name: MyOrg
+    # custom_virtualenv: ansible3
+    teams:
+    - name: DevOps
+      description: DevOps
+    - name: Support
+      description: Support Team
+```

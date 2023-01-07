@@ -58,3 +58,39 @@
       AUTH_LDAP_1_ORGANIZATION_MAP: "{{ awx__ldap_1_organization_map | default({}) }}"
       AUTH_LDAP_1_TEAM_MAP: "{{ awx__ldap_1_team_map | default({}) }}"
   when: awx__ldap_1_server_uri is defined and awx__ldap_1_server_uri|length>10
+
+
+# Organizations
+- name: Create organization
+  awx.awx.organization:
+    controller_host: "{{ awx_host }}"
+    validate_certs: "{{ awx_validate_certs }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    name: "{{ item.name }}"
+    # new_name: "{{ item.new_name | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    # notification_templates_approvals: []
+    # notification_templates_error: []
+    # notification_templates_started: []
+    # notification_templates_success: []
+    custom_virtualenv: "{% if item.custom_virtualenv is defined %}{{ custom_venv_dir }}/{{ item.custom_virtualenv }}{% else %}/var/lib/awx/venv/ansible{% endif %}"
+    default_environment: "{{ item.default_environment | default(omit) }}"
+  with_items: "{{ awx__organizations }}"
+  when: awx__organizations is defined and awx__organizations|length>0
+
+# Teams
+- name: Create Teams
+  awx.awx.team:
+    controller_host: "{{ awx_host }}"
+    validate_certs: "{{ awx_validate_certs }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    name: "{{ item.1.name }}"
+    description: "{{ item.1.description | default(omit) }}"
+    organization: "{{ item.0.name | default('Default') }}"
+    state: "{{ item.1.state | default('present') }}"
+  with_subelements:
+    - "{{ awx__organizations | selectattr('teams', 'defined') | list }}" # "{{ awx__organizations }}"
+    - teams
+  when: "awx__organizations is defined and awx__organizations|length>0"
