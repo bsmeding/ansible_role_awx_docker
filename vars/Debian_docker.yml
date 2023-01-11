@@ -2,10 +2,9 @@
 python_packages:
   - name: setuptools
   - name: docker-compose
-  - name: ansible
-
 
 os_packages:
+  - name: ansible
   - name: build-essential
   - name: python3-virtualenv
   - name: python3-pip
