@@ -1,0 +1,10 @@
+DATABASE_USER={{ awx__postgres_username|quote }}
+DATABASE_NAME={{ awx__postgres_db|quote }}
+DATABASE_HOST={{ awx__postgres_hostname|default('awx_postgres')|quote }}
+DATABASE_PORT={{ awx__postgres_port|default('5432')|quote }}
+DATABASE_PASSWORD={{ awx__postgres_password|default('awxpass')|quote }}
+{% if awx__postgres_admin_password is defined %}
+DATABASE_ADMIN_PASSWORD={{ awx__postgres_admin_password|quote }}
+{% endif %}
+AWX_ADMIN_USER={{ awx__admin_user|quote }}
+AWX_ADMIN_PASSWORD={{ awx__admin_password|quote }}

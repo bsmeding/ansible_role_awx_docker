@@ -1,0 +1,22 @@
+---
+python_packages:
+  - name: setuptools
+
+os_packages:
+  - name: ansible
+  - name: build-essential
+  - name: python3-virtualenv
+  - name: python3-pip
+  - name: virtualenv
+  - name: git
+  - name: nodejs
+  - name: zlib1g-dev
+  - name: libncurses5-dev
+  - name: libgdbm-dev
+  - name: libnss3-dev
+  - name: libssl-dev
+  - name: gettext
+  - name: g++
+  - name: bzip2
+  - name: openssl
+  - name: libffi-dev

@@ -1,0 +1,46 @@
+---
+- name: Check if Python directory exists
+  ansible.builtin.file:
+    state: directory
+    path: "{{ custom_python_dir }}"
+    mode: '0755'
+  become: true
+
+- name: Check if already exists
+  ansible.builtin.stat:
+    path: "{{ custom_python_dir }}/Python-{{ python_version }}/bin/python3"
+  register: python
+
+- name: Install version
+  block:
+
+    - name: Download archive with python
+      ansible.builtin.get_url:
+        url: "https://www.python.org/ftp/python/{{ python_version }}/Python-{{ python_version }}.tgz"
+        dest: "/tmp/python_{{ python_version }}.tgz"
+        force: true
+
+    - name: Extract python archive to temp dir
+      ansible.builtin.unarchive:
+        src: "/tmp/python_{{ python_version }}.tgz"
+        dest: "/tmp/"
+        copy: false
+        mode: "0755"
+      become: true
+
+    - name: Check if Python directory exists
+      ansible.builtin.file:
+        state: directory
+        path: "{{ custom_python_dir }}/Python-{{ python_version }}"
+        mode: '0755'
+      become: true
+
+    - name: Build python from source code to custom python directory
+      shell: |
+        ./configure --prefix={{ custom_python_dir }}/Python-{{ python_version }} && \
+        make && \
+        make install
+      become: true
+      args:
+        chdir: "/tmp/Python-{{ python_version }}/"
+  when: not python.stat.exists

@@ -1,0 +1,27 @@
+---
+- name: Install prerequestics for RHEL
+  block:
+    - name: "Install the latest version of Python{{ python3_version }} RHEL"
+      ansible.builtin.dnf:
+        name: "python{{ python3_version }}"
+        state: latest
+
+    - name: "Set python alternatives to {{ python3_version }}"
+      community.general.alternatives:
+        link: /bin/python3
+        name: python3
+        path: "/usr/bin/python{{ python3_version }}"
+        state: "selected"
+
+    # - name: Install the latest version of python3-dnf
+    #   ansible.builtin.dnf:
+    #     name: python3-dnf
+    #     state: latest
+
+    - name: Install the latest version of python3-pip
+      ansible.builtin.dnf:
+        name:
+          - python3-pip
+          - python3-wheel
+        state: latest
+  become: true

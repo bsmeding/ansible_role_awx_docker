@@ -1,0 +1,100 @@
+---
+- name: Set AWX Base settings
+  awx.awx.settings:
+    controller_host: "localhost:{{ awx__port_web_http }}"
+    validate_certs: "{{ awx__validate_certs | default(true) }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    settings:
+      TOWER_URL_BASE: "{{ awx__base_url }}"
+      ORG_ADMINS_CAN_SEE_ALL_USERS: "true"
+      CUSTOM_VENV_PATHS:
+        - "{{ custom_venv_dir }}"
+  when: (custom_venv_dir is defined and custom_venv_dir|length>0)
+  failed_when: false
+
+# Configure AWX for LDAP
+- name: Set all the LDAP Default Auth Bind Params
+  awx.awx.settings:
+    controller_host: "localhost:{{ awx__port_web_http }}"
+    validate_certs: "{{ awx__validate_certs | default(true) }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    settings:
+      AUTH_LDAP_SERVER_URI: "{{ awx__ldap_server_uri | default(omit) }}"
+      AUTH_LDAP_BIND_DN: "{{ awx__ldap_bind_dn | default(omit) }}"
+      AUTH_LDAP_BIND_PASSWORD: "{{ awx__ldap_bind_password  | default(omit) }}"
+      AUTH_LDAP_GROUP_TYPE: "{{ awx__ldap_group_type | default(omit) }}"
+      AUTH_LDAP_USER_DN_TEMPLATE: "{{ awx__ldap_user_dn_template | default(omit) }}"
+      AUTH_LDAP_REQUIRE_GROUP: "{{ awx__ldap_require_group | default(omit) }}"
+      AUTH_LDAP_DENY_GROUP: "{{ awx__ldap_deny_group | default(omit) }}"
+      AUTH_LDAP_USER_SEARCH: "{{ awx__ldap_user_search | default([]) }}"
+      AUTH_LDAP_GROUP_SEARCH: "{{ awx__ldap_group_search | default([]) }}"
+      AUTH_LDAP_USER_ATTR_MAP: "{{ awx__ldap_user_attr_map | default({}) }}"
+      # AUTH_LDAP_GROUP_TYPE_PARAMETERS: "{{ awx__ldap_group_type_parameters | default({}) }}"
+      AUTH_LDAP_USER_FLAGS_BY_GROUP: "{{ awx__ldap_user_flags_by_group | default({}) }}"
+      AUTH_LDAP_ORGANIZATION_MAP: "{{ awx__ldap_organization_map | default({}) }}"
+      AUTH_LDAP_TEAM_MAP: "{{ awx__ldap_team_map | default({}) }}"
+  when: awx__ldap_server_uri is defined and awx__ldap_server_uri|length>10
+  failed_when: false
+
+- name: Set all the LDAP 1 Auth Bind Params
+  awx.awx.settings:
+    controller_host: "localhost:{{ awx__port_web_http }}"
+    validate_certs: "{{ awx__validate_certs | default(true) }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    settings:
+      AUTH_LDAP_1_SERVER_URI: "{{ awx__ldap_1_server_uri | default(omit) }}"
+      AUTH_LDAP_1_BIND_DN: "{{ awx__ldap_1_bind_dn | default(omit) }}"
+      AUTH_LDAP_1_BIND_PASSWORD: "{{ awx__ldap_1_bind_password  | default(omit) }}"
+      AUTH_LDAP_1_GROUP_TYPE: "{{ awx__ldap_1_group_type | default(omit) }}"
+      AUTH_LDAP_1_USER_DN_TEMPLATE: "{{ awx__ldap_1_user_dn_template | default(omit) }}"
+      AUTH_LDAP_1_REQUIRE_GROUP: "{{ awx__ldap_1_require_group | default(omit) }}"
+      AUTH_LDAP_1_DENY_GROUP: "{{ awx__ldap_1_deny_group | default(omit) }}"
+      AUTH_LDAP_1_USER_SEARCH: "{{ awx__ldap_1_user_search | default([]) }}"
+      AUTH_LDAP_1_GROUP_SEARCH: "{{ awx__ldap_1_group_search | default([]) }}"
+      AUTH_LDAP_1_USER_ATTR_MAP: "{{ awx__ldap_1_user_attr_map | default({}) }}"
+      # AUTH_LDAP_1_GROUP_TYPE_PARAMETERS: "{{ awx__ldap_1_group_type_parameters | default({}) }}"
+      AUTH_LDAP_1_USER_FLAGS_BY_GROUP: "{{ awx__ldap_1_user_flags_by_group | default({}) }}"
+      AUTH_LDAP_1_ORGANIZATION_MAP: "{{ awx__ldap_1_organization_map | default({}) }}"
+      AUTH_LDAP_1_TEAM_MAP: "{{ awx__ldap_1_team_map | default({}) }}"
+  when: awx__ldap_1_server_uri is defined and awx__ldap_1_server_uri|length>10
+  failed_when: false
+
+# Organizations
+- name: Create organization
+  awx.awx.organization:
+    controller_host: "localhost:{{ awx__port_web_http }}"
+    validate_certs: "{{ awx__validate_certs | default(true) }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    name: "{{ item.name }}"
+    # new_name: "{{ item.new_name | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    # notification_templates_approvals: []
+    # notification_templates_error: []
+    # notification_templates_started: []
+    # notification_templates_success: []
+    custom_virtualenv: "{% if item.custom_virtualenv is defined %}{{ custom_venv_dir }}/{{ item.custom_virtualenv }}{% else %}/var/lib/awx/venv/ansible{% endif %}"
+    default_environment: "{{ item.default_environment | default(omit) }}"
+  with_items: "{{ awx__organizations }}"
+  when: awx__organizations is defined and awx__organizations|length>0
+  failed_when: false
+
+# Teams
+- name: Create Teams
+  awx.awx.team:
+    controller_host: "localhost:{{ awx__port_web_http }}"
+    validate_certs: "{{ awx__validate_certs | default(true) }}"
+    controller_username: "{{ awx__admin_user }}"
+    controller_password: "{{ awx__admin_password }}"
+    name: "{{ item.1.name }}"
+    description: "{{ item.1.description | default(omit) }}"
+    organization: "{{ item.0.name | default('Default') }}"
+    state: "{{ item.1.state | default('present') }}"
+  with_subelements:
+    - "{{ awx__organizations | selectattr('teams', 'defined') | list }}" # "{{ awx__organizations }}"
+    - teams
+  when: "awx__organizations is defined and awx__organizations|length>0"
+  failed_when: false

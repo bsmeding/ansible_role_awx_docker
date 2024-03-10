@@ -1,0 +1,205 @@
+---
+## Requirements: Docker and Docker-compose ! install on forehand or use additional roles
+- name: check if version is correct for Docker installation
+  ansible.builtin.assert:
+    that:
+      - awx__version is version_compare('17.0.0', '<=', strict=true)
+    fail_msg: "Only AWX version 17.0.0 are possible with this role"
+
+- name: Install RedHet prerequistics
+  include_tasks: redhat_prereq.yml
+  when: "ansible_os_family == 'RedHat' and not skip_awx_install|bool"
+
+- name: Install packages for OS
+  ansible.builtin.package:
+    name={{ item.name }}
+    version={{ item.version | default(omit) }}
+  with_items: "{{ os_packages }}"
+  become: true
+  when: not skip_awx_install|bool
+
+- name: Install default pip packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    state: forcereinstall
+    executable: pip3
+    extra_args: "{{ awx__pip_install_extra_args }}"
+    umask: "0022"
+  changed_when: false
+  with_items: "{{ default_pip_packages }}"
+  become: "{{ awx__install_as_root }}"
+  when: not skip_awx_install|bool
+
+- name: Install docker-compose
+  ansible.builtin.get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ awx__install_docker_compose_version }}/docker-compose-Linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x'
+  when: awx__install_docker_compose_version is defined and awx__install_docker_compose_version != ''
+
+- name: Install OS specific pip packages
+  ansible.builtin.pip:
+    name: "{{ item.name }}"
+    version: "{{ item.version | default('latest') }}"
+    executable: pip3
+    extra_args: "{{ awx__pip_install_extra_args }}"
+    umask: "0022"
+  with_items: "{{ python_packages }}"
+  tags:
+    - pip
+    - packages
+  become: "{{ awx__install_as_root }}"
+
+- name: Clone AWX into configured directory
+  ansible.builtin.git:
+    repo: "{{ awx__repo }}"
+    dest: "{{ awx__repo_dir }}"
+    version: "{{ awx__version }}"
+    update: "{{ awx__keep_updated }}"
+    force: true
+    accept_hostkey: true
+  changed_when: false
+  become: "{{ awx__install_as_root }}"
+
+# - name: Check if playbook has been run before.
+#   stat:
+#     path: "{{ awx__docker_compose_dir }}/awx_playbook_complete"
+#   register: awx_playbook_already_run
+
+- name: Change variables in installation inventory of AWX
+  ansible.builtin.lineinfile:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^awx_task_hostname=", line: "awx_task_hostname={{ awx__setting_awx_task_hostname }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^awx_web_hostname=", line: "awx_web_hostname={{ awx__setting_awx_web_hostname }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^postgres_data_dir=", line: "postgres_data_dir={{ awx__postgres_data_dir }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^host_port=", line: "host_port={{ awx__port_web_http }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^host_port_ssl=", line: "host_port_ssl={{ awx__port_web_https }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^awx__docker_compose_dir=", line: "docker_compose_dir={{ awx__docker_compose_dir }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^pg_password=", line: "pg_password={{ awx__postgres_password }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^project_data_dir=", line: "project_data_dir={{ awx__project_data_dir }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^alternate_dns_servers=", line: "alternate_dns_servers={{ awx__dns_servers }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^admin_user=", line: "admin_user={{ awx__admin_user }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^admin_password=", line: "admin_password={{ awx__admin_password }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^create_preload_data=", line: "create_preload_data={{ awx__create_preload_data | bool | capitalize }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^secret_key=", line: "secret_key={{ awx__secret_key }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^broadcast_websocket_secret=", line: "broadcast_websocket_secret={{ awx__broadcast_websocket_secret }}"}
+  changed_when: false
+  no_log: true
+  become: "{{ awx__install_as_root }}"
+
+- name: Change variables in installation inventory of AWX for proxy
+  ansible.builtin.lineinfile:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^http_proxy=", line: "http_proxy={{ http_proxy | default('') }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^https_proxy=", line: "https_proxy={{ https_proxy | default('') }}"}
+    - {dest: "{{ awx__repo_dir }}/installer/inventory", regexp: "^no_proxy=", line: "no_proxy={{ (no_proxy | default([]) |join(', ')) }}"}
+  changed_when: false
+  no_log: false
+  when: http_proxy is defined or https_proxy is defined
+  become: "{{ awx__install_as_root }}"
+
+- name: Create project data dir
+  ansible.builtin.file:
+    path: "{{ awx__project_data_dir }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+    recurse: true
+  become: true
+
+- name: Create redis_socket dir
+  ansible.builtin.file:
+    path: "{{ awx__redis_socket_dir }}"
+    state: directory
+    mode: "0777"
+    owner: root
+    group: root
+    recurse: true
+  become: true
+
+# TODO: Change to Docker volume, more secure!
+- name: Create directories postgres data dir
+  ansible.builtin.file:
+    path: "{{ awx__postgres_data_dir }}"
+    state: directory
+    mode: "0777"
+    owner: root
+    group: root
+    recurse: true
+  become: true
+
+- name: Custom custom_venv_dir found - edit config and add docker-compose-override.yml
+  block:
+    # - name: Disable auto start containers in AWX playbook
+    #   set_fact:
+    #     compose_start_containers: false
+
+    # Create compose dir already, otherwise first run it doesnt exist (it will be created in ansible-playbook install.yml)
+    - name: Create {{ awx__docker_compose_dir }} directory
+      ansible.builtin.file:
+        path: "{{ awx__docker_compose_dir }}"
+        state: directory
+        mode: "0770"
+        owner: root
+        group: root
+        recurse: true
+      become: true
+
+    - name: Check if VenV root exist
+      ansible.builtin.stat:
+        path: "{{ custom_venv_dir }}"
+      register: stat_venv_dir
+
+    - name: Create VenV root {{ custom_venv_dir }} directory
+      ansible.builtin.file:
+        path: "{{ custom_venv_dir }}"
+        state: directory
+        mode: "0775"
+        owner: root
+        group: "{% if docker_guid %}docker{% else %}root{% endif %}"
+        recurse: true
+      become: true
+      when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0) and (not stat_venv_dir.stat.exists)
+
+    - name: Check if VenV python dir exist
+      ansible.builtin.stat:
+        path: "{{ custom_python_dir }}"
+      register: stat_python_dir
+
+    - name: Create VenV python dir
+      ansible.builtin.file:
+        path: "{{ custom_python_dir }}"
+        state: directory
+        mode: "0775"
+        owner: root
+        group: "{% if docker_guid %}docker{% else %}root{% endif %}"
+        recurse: true
+      become: true
+      when: custom_python_dir is defined and (custom_venvs is defined and custom_venvs|length>0)  and (not stat_python_dir.stat.exists)
+
+    - name: Change custom_venv_dir in inventory file
+      ansible.builtin.lineinfile:
+        path: "{{ awx__repo_dir }}/installer/inventory"
+        regexp: "^#custom_venv_dir="
+        line: "custom_venv_dir={{ custom_venv_dir }}"
+
+    - name: Copy docker-compose.override.yml template
+      ansible.builtin.template:
+        src: docker-compose.override.yml.j2
+        dest: "{{ awx__docker_compose_dir }}/docker-compose.override.yml"
+  when: custom_venv_dir is defined or awx__disable_git_ssl_verify|bool
+
+- name: Run the AWX installation playbook
+  command: "ansible-playbook -i inventory install.yml"
+  args:
+    chdir: "{{ awx__repo_dir }}/installer"
+    creates: "{{ awx__docker_compose_dir }}/awx_playbook_complete"
+  failed_when: false
+  become: "{{ awx__install_as_root }}"

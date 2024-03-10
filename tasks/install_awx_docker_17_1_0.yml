@@ -1,0 +1,234 @@
+---
+## Requirements: Docker and Docker-compose ! install on forehand or use additional roles
+
+- name: check if version is correct for Docker installation
+  ansible.builtin.assert:
+    that:
+      - awx__version is version_compare('17.1.0', '==', strict=true)
+    fail_msg: "Only AWX version 17.1.0 are possible with this role"
+
+- name: Check if playbook has been run before.
+  stat:
+    path: "{{ awx__17_1_0_config_path }}/awx_playbook_complete"
+  register: awx_playbook_already_run
+
+- name: Generate broadcast websocket secret
+  set_fact:
+    broadcast_websocket_secret: "{{ lookup('password', '/dev/null length=128') }}"
+  run_once: true
+  no_log: true
+  when: broadcast_websocket_secret is not defined
+
+# First docker user (if docker role has run), otherwise default role, otherwise root
+- name: Create project data dir
+  ansible.builtin.file:
+    state: directory
+    path: "{{ awx__project_data_dir }}"
+    mode: "0755"
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
+
+- name: Create awx__17_1_0_config_path data dir
+  ansible.builtin.file:
+    state: directory
+    path: "{{ awx__17_1_0_config_path }}/conf.d"
+    mode: "0750"
+    recurse: true
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
+
+- name: Create redis_socket dir
+  ansible.builtin.file:
+    path: "{{ awx__redis_socket_dir }}"
+    state: directory
+    mode: "0777"
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
+    # recurse: true
+  become: true
+
+- name: Create directories postgres data dir
+  ansible.builtin.file:
+    path: "{{ awx__postgres_data_dir }}"
+    state: directory
+    mode: "0770"
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
+    recurse: true
+  become: true
+
+- name: Custom custom_venv_dir found
+  block:
+    - name: Check if VenV root exist
+      ansible.builtin.stat:
+        path: "{{ custom_venv_dir }}"
+      register: stat_venv_dir
+
+    - name: Create VenV root {{ custom_venv_dir }} directory
+      ansible.builtin.file:
+        path: "{{ custom_venv_dir }}"
+        state: directory
+        mode: "0775"
+        owner: "{{ docker_uid | default('root') }}"
+        group: "{{ docker_gid | default('root') }}"
+        recurse: true
+      become: true
+      when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0) and (not stat_venv_dir.stat.exists)
+
+    - name: Check if VenV python dir exist
+      ansible.builtin.stat:
+        path: "{{ custom_python_dir }}"
+      register: stat_python_dir
+
+    - name: Create VenV python dir
+      ansible.builtin.file:
+        path: "{{ custom_python_dir }}"
+        state: directory
+        mode: "0775"
+        owner: "{{ docker_uid | default('root') }}"
+        group: "{{ docker_gid | default('root') }}"
+        recurse: true
+      become: true
+      when: custom_python_dir is defined and (custom_venvs is defined and custom_venvs|length>0)  and (not stat_python_dir.stat.exists)
+  when: custom_venv_dir is defined or awx__disable_git_ssl_verify|bool
+
+- name: Install pip modules
+  ansible.builtin.pip:
+    name:
+      - requests
+      - netaddr
+
+- name: Install AWX containers
+  block:
+    - name: Create docker volumes
+      community.docker.docker_volume:
+        name: "{{ item }}"
+      with_items:
+        - "supervisor-socket"
+        - "rsyslog-socket"
+        - "rsyslog-config"
+
+    - name: Copy sec key templates
+      ansible.builtin.template:
+        src: "SECRET_KEY.j2"
+        dest: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Copy setting templates
+      ansible.builtin.template:
+        src: "{{ item.file }}.j2"
+        dest: "{{ awx__17_1_0_config_path }}/conf.d/{{ item.file }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+      loop:
+        - file: environment.sh
+          mode: "0600"
+        - file: credentials.py
+          mode: "0600"
+        - file: nginx.conf
+          mode: "0600"
+        - file: redis.conf
+          mode: "0664"
+
+    - name: Create a network for AWX
+      community.docker.docker_network:
+        name: "awx"
+
+    - name: Run DB container
+      community.docker.docker_container:
+        name: "awx_postgres"
+        image: "{{ awx__17_1_0_postgres_image }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "awx"
+        env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_postgres) }}"
+        volumes: "{{ awx__postgres_data_dir }}/12/data/:/var/lib/postgresql/data:Z"
+        log_driver: "{{ awx__17_1_0_log_driver }}"
+        log_options: "{{ awx__17_1_0_log_options }}"
+
+    - name: Run Redis container
+      community.docker.docker_container:
+        name: "awx_redis"
+        image: "{{ awx__17_1_0_redis_image }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "awx"
+        env: "{{ awx__17_1_0_default_env }}"
+        command:
+          - "/usr/local/etc/redis/redis.conf"
+        volumes:
+          - "{{ awx__docker_compose_dir }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
+          - "{{ awx__docker_compose_dir }}/redis_socket:/var/run/redis/:rw"
+        log_driver: "{{ awx__17_1_0_log_driver }}"
+        log_options: "{{ awx__17_1_0_log_options }}"
+
+    - name: Run Task container
+      community.docker.docker_container:
+        name: "awx_{{ awx__setting_awx_task_hostname }}"
+        image: "{{ awx__17_1_0_awx_image }}"
+        restart_policy: unless-stopped
+        user: root
+        networks:
+          - name: "awx"
+        env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_task) }}"
+        command:
+          - "/usr/bin/launch_awx_task.sh"
+        volumes:
+          - supervisor-socket:/var/run/supervisor
+          - rsyslog-socket:/var/run/awx-rsyslog/
+          - rsyslog-config:/var/lib/awx/rsyslog/
+          # - "{{ awx__docker_compose_dir }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          # - "{{ awx__docker_compose_dir }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          # - "{{ awx__docker_compose_dir }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          # - "{{ awx__docker_compose_dir }}/settings.py:/etc/tower/settings.py:rw"s
+          - "{{ awx__17_1_0_config_path }}:/etc/tower:rw"
+          - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
+          - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
+          - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
+          - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
+        log_driver: "{{ awx__17_1_0_log_driver }}"
+        log_options: "{{ awx__17_1_0_log_options }}"
+
+    - name: Run Web container
+      community.docker.docker_container:
+        name: "awx_{{ awx__setting_awx_web_hostname }}"
+        image: "{{ awx__17_1_0_awx_image }}"
+        restart_policy: unless-stopped
+        user: root
+        networks:
+          - name: "awx"
+        env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_web) }}"
+        ports:
+          - "{{ awx__port_web_http }}:8052"
+          - "{{ awx__port_web_https }}:8052"
+        volumes:
+          - supervisor-socket:/var/run/supervisor
+          - rsyslog-socket:/var/run/awx-rsyslog/
+          - rsyslog-config:/var/lib/awx/rsyslog/
+          # - "{{ awx__docker_compose_dir }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          # - "{{ awx__docker_compose_dir }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          # - "{{ awx__docker_compose_dir }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          # - "{{ awx__docker_compose_dir }}/settings.py:/etc/tower/settings.py:rw"s
+          - "{{ awx__17_1_0_config_path }}:/etc/tower:rw"
+          - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
+          - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
+          - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
+          - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
+        log_driver: "{{ awx__17_1_0_log_driver }}"
+        log_options: "{{ awx__17_1_0_log_options }}"
+
+    # - name: Run migrations in task container
+    #   shell: docker-compose run --rm --service-ports task awx-manage migrate --no-input
+    #   args:
+    #     chdir: "{{ awx__docker_compose_dir }}"
+
+    # - name: Update CA trust in awx_web container
+    #   command: docker exec awx_web '/usr/bin/update-ca-trust'
+    #   when: awx_compose_config.changed or awx_compose_start.changed
+
+    # - name: Update CA trust in awx_task container
+    #   command: docker exec awx_task '/usr/bin/update-ca-trust'
+    #   when: awx_compose_config.changed or awx_compose_start.changed

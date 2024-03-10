@@ -1,0 +1,91 @@
+---
+# custom_venv_dir: /opt/awx/venv
+- name: Check if VenV root exist
+  ansible.builtin.stat:
+    path: "{{ custom_venv_dir }}"
+  register: stat_venv_dir
+
+- name: Install default pip packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    state: forcereinstall
+    executable: pip3
+    extra_args: "{{ awx__pip_install_extra_args }}"
+    umask: "0022"
+  changed_when: false
+  with_items: "{{ default_pip_packages }}"
+  become: "{{ awx__install_as_root }}"
+  when: not skip_awx_install|bool
+
+- name: Create VenV root {{ custom_venv_dir }} directory
+  ansible.builtin.file:
+    path: "{{ custom_venv_dir }}"
+    state: directory
+    mode: "0775"
+    recurse: true
+    owner: root
+    group: docker
+  become: true
+  when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0) and (not stat_venv_dir.stat.exists)
+
+- name: Delete custom VenV directories (clean install)
+  ansible.builtin.file:
+    path: "{{ custom_venv_dir }}/{{ item.name }}"
+    state: absent
+  loop: "{{ custom_venvs }}"
+  become: true
+  when: custom_venv_delete_before_install is defined and (custom_venv_delete_before_install|bool)
+
+- name: Specific python version
+  block:
+    - name: Install specific Python version
+      ansible.builtin.include_tasks: specific_python.yml
+      vars:
+        python_version: "{{ item.python_version }}"
+      loop: "{{ custom_venvs }}"
+
+    - name: Install default packages latest version in custom VenV
+      ansible.builtin.pip:
+        name: "{{ default_pip_packages | list }}"
+        virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
+        state: latest
+        virtualenv_site_packages: False
+        virtualenv_command: "{{ custom_python_dir }}/Python-{{ item.python_version }}/bin/python3 -m venv --copies"
+        umask: "0022"
+      become: false
+      loop: "{{ custom_venvs }}"
+
+    - name: Install Ansible packages in custom Python VenV
+      ansible.builtin.pip:
+        name: "{{ item.ansible_pip_packages | list }}"
+        virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
+        virtualenv_site_packages: False
+        # virtualenv_python: "{% if item.python_version is defined %}{{ custom_python_dir }}/Python-{{ item.python_version  }}/bin/python3{% else %}/usr/bin/python3{% endif %}"
+        virtualenv_command: "{{ custom_python_dir }}/Python-{{ item.python_version }}/bin/python3"
+        umask: "0022"
+      become: false
+      loop: "{{ custom_venvs }}"
+  when: item.python_version is defined
+
+- name: Default python version
+  block:
+    - name: Install default packages latest version in custom VenV
+      ansible.builtin.pip:
+        name: "{{ default_pip_packages | list }}"
+        virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
+        state: latest
+        virtualenv_command: "{{ python_venv_command | default('virtualenv') }}"
+        umask: "0022"
+      become: false
+      loop: "{{ custom_venvs }}"
+
+    - name: Install Ansible packages in custom Python VenV
+      ansible.builtin.pip:
+        name: "{{ item.ansible_pip_packages | list }}"
+        virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
+        virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"
+        virtualenv_command: "{{ python_venv_command | default('virtualenv') }}"
+        umask: "0022"
+      become: false
+      loop: "{{ custom_venvs }}"
+  when: item.python_version is undefined

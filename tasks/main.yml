@@ -1,0 +1,58 @@
+---
+- name: Check if playbook has been run before.
+  stat:
+    path: "{{ awx__docker_compose_dir }}/awx_playbook_complete"
+  register: awx_playbook_already_run
+
+- name: Include OS-specific vars
+  include_vars: "{{ ansible_os_family }}_docker.yml"
+  when: not skip_awx_install|bool
+
+- name: Install packages when not already installed
+  block:
+
+    - name: Install Custom VenV (only for version below 18.0.0)
+      include_tasks: awx_venv.yml
+      when: custom_venvs is defined and custom_venvs|length>0 and (awx__version is version('18.0.0', '<')) and (not skip_awx_install|bool)
+
+    - name: Install AWX version below 17.1.0
+      ansible.builtin.include_tasks: install_awx_docker_below_v17.yml
+      when: not skip_awx_install|bool and (awx__version is version('17.1.0', '<'))
+
+    - name: Install AWX version 17.1.0
+      ansible.builtin.include_tasks: install_awx_docker_17_1_0.yml
+      when: not skip_awx_install|bool and (awx__version is version('17.1.0', '='))
+
+    - name: Install AWX above version v17
+      ansible.builtin.include_tasks: install_awx_docker.yml
+      when: not skip_awx_install|bool and (awx__version is version('17.1.0', '>'))
+  when: not skip_awx_install|bool and (not awx_playbook_already_run.stat.exists or awx__force_reinstall|bool)
+
+# Adter installation (either pre or post version 17, check if AWX is reachable)
+# IF success, place sucess file
+# and remove install dir
+# and process further for config
+- name: Check if AWX is started
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: "{{ awx__port_web_http }}"
+    delay: 3
+  register: awx_port_check
+  failed_when: false
+
+- name: Block when succesfull started (pre 17.1.0 version)
+  block:
+    - name: Create a file to mark whether this playbook has completed
+      ansible.builtin.file:
+        path: "{{ awx__docker_compose_dir }}/awx_playbook_complete"
+        state: touch
+      changed_when: false
+
+    - name: Remove temporary repo dir
+      ansible.builtin.file:
+        path: "{{ awx__repo_dir }}"
+        state: absent
+
+    - name: Configure base sessings
+      ansible.builtin.include_tasks: config_awx.yml
+  when: awx_port_check.state is defined and awx_port_check.state == 'started' and (awx__version is version('17.1.0', '<'))

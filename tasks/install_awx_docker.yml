@@ -1,0 +1,80 @@
+---
+## Requirements: Docker and Docker-compose ! install on forehand or use additional roles
+- name: Include OS-specific vars
+  include_vars: "{{ ansible_os_family }}_docker.yml"
+
+- name: check if version is correct for Docker installation
+  ansible.builtin.assert:
+    that:
+      - awx__version is version_compare('17.1.0', '>', strict=true)
+    fail_msg: "Only AWX version above 17.1.0 are possible with this role"
+
+- name: remove docker-py if exist
+  ansible.builtin.pip:
+    name:
+      - docker-py
+    state: absent
+  become: true
+
+- name: check if wheel is vavailable
+  ansible.builtin.pip:
+    name:
+      - wheel
+    state: latest
+  become: true
+
+- name: Clone AWX into configured directory
+  ansible.builtin.git:
+    repo: "{{ awx__repo }}"
+    dest: "{{ awx__repo_dir }}"
+    version: "{{ awx__version }}"
+    update: "{{ awx__keep_updated }}"
+    force: true
+    accept_hostkey: true
+  changed_when: false
+
+- name: Check if correct receptor image is available
+  community.docker.docker_image:
+    name: "{{ awx__receptor_image | default('quay.io/ansible/receptor:devel') }}"
+    source: pull
+
+- name: Make docker-compose-build
+  community.general.make:
+    chdir: "{{ awx__repo_dir }}"
+    target: docker-compose-build
+    params:
+      DEV_DOCKER_TAG_BASE: "{{ awx__dev_docker_tag_base | default('ansible') }}"
+      COMPOSE_TAG: "{{ awx__version }}"
+      # RECEPTOR_IMAGE: "{{ awx__receptor_image | default('quay.io/ansible/receptor:devel') }}"
+  become: true
+
+- name: Make docker-compose and run containers
+  community.general.make:
+    chdir: "{{ awx__repo_dir }}"
+    target: docker-compose
+    params:
+      DEV_DOCKER_TAG_BASE: "{{ awx__dev_docker_tag_base | default('ansible') }}"
+      COMPOSE_TAG: "{{ awx__version }}"
+      COMPOSE_UP_OPTS: -d
+  register: run_docker_containers
+  become: true
+# - name: Run all containers
+#   community.docker.docker_compose:
+#     project_src: "{{ awx__repo_dir }}/tools/docker-compose/_sources/"
+#     build: false
+#     pull: false
+#     remove_orphans: true
+#   register: run_docker_containers
+
+- name: Build and clean UI (can take up to 10 minutes!)
+  community.docker.docker_container_exec:
+    container: tools_awx_1
+    command: make clean-ui ui-devel
+  register: result_awx_ui_clean
+  when: run_docker_containers.changed
+  become: true
+
+- name: Show result of build and clean
+  debug:
+    var: result_awx_ui_clean
+  when: result_awx_ui_clean is defined

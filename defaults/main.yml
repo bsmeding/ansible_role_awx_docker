@@ -1,0 +1,135 @@
+---
+# GLOBAL SETTINGS
+awx__admin_user: admin
+awx__admin_password: password
+awx__secret_key: awxsecret
+awx__broadcast_websocket_secret: wotWFnUPkwV8e62jacVHterf5UfAF2bI
+awx__port_web_http: 9080
+awx__port_web_https: 9443
+awx__base_url: 'http://localhost'
+awx__dns_servers: "8.8.8.8,8.8.4.4"
+awx__validate_certs: false
+awx__host_root: '/opt/awx'
+awx__setting_awx_task_hostname: 'task'
+awx__setting_awx_web_hostname: 'web'
+awx__postgres_data_dir: "{{ awx__host_root }}/pgdocker"
+# awx__postgres_host: 'postgres_server1' # External server
+# awx__postgres_host_port: '5432'
+awx__postgres_username: 'awxpguser'
+awx__postgres_password: 'awxpgpass'
+awx__postgres_db: 'awx'
+awx__postgres_admin_password: 'pgadmin'
+
+awx__project_data_dir: "{{ awx__host_root }}/projects"
+awx__docker_compose_dir: "{{ awx__host_root }}/docker_compose"
+awx__redis_socket_dir: "{{ awx__host_root }}/redis_socket"
+awx__create_preload_data: true
+awx__disable_git_ssl_verify: false
+awx__ca_trust_path: '/etc/pki/ca-trust/source/anchors'
+awx__install_docker_compose_version: "1.25.3"
+
+## VERSION AWX 17.1.0 AND LOWER:
+awx__repo: https://github.com/ansible/awx.git
+awx__repo_dir: "/tmp/awx"
+awx__version: 17.1.0
+awx__17_1_0_awx_image: "ansible/awx:17.1.0"
+awx__17_1_0_postgres_image: "postgres:12"
+awx__17_1_0_config_path: "{{ awx__host_root }}/config"
+awx__17_1_0_redis_image: "redis"
+awx__17_1_0_default_env:
+  TZ: "{{ container_time_zone | default('Europe/Paris') }}"
+  PUID: "{{ docker_uid|default(1040) }}"
+  PGID: "{{ docker_gid|default(1001) }}"
+  http_proxy: "{{ http_proxy | default('') }}"
+  https_proxy: "{{ https_proxy | default('') }}"
+  no_proxy: "{{ no_proxy | default('') }}"
+awx__17_1_0_env_postgres:
+  POSTGRES_USER: "{{ awx__postgres_username }}"
+  POSTGRES_PASSWORD: "{{ awx__postgres_password }}"
+  POSTGRES_DB: "awx17"
+awx__17_1_0_env_task:
+  AWX_SKIP_MIGRATIONS: "1"
+  SUPERVISOR_WEB_CONFIG_PATH: "/etc/supervisord.conf"
+awx__17_1_0_env_web: {}
+awx__17_1_0_log_driver: json-file
+awx__17_1_0_log_options:
+awx__keep_updated: false
+awx__install_as_root: false
+skip_awx_install: false
+awx__force_reinstall: false
+
+awx__pip_install_extra_args: '--user --upgrade'
+
+# Proxy settings
+http_proxy: ''
+https_proxy: ''
+no_proxy: ''
+
+# !! TODO: Disable Demo data in inventory file
+default_pip_packages:
+  - pip
+  - psutil
+
+## VERTSION >18 and up
+awx__dev_docker_tag_base: custom
+awx__receptor_image: quay.io/ansible/receptor:v1.2.3                     # quay.io/ansible/receptor:devel
+
+# Only for version 17.1 and below:
+custom_venv_dir: /opt/awx/venv
+custom_venvs: []
+  # - name: ansible4_10
+  #   ansible_pip_packages:
+  #   - ansible==4.10.0
+  #   - ansible-lint
+  #   - pynautobot
+  #   - jmespath
+  #   - napalm
+  #   - netmiko
+  #   - paramiko
+custom_python_dir: /opt/python
+
+
+# OPTIONAL, CONFIGURE AWX WITH SETTINGS:
+# Organizations
+awx__organizations: []
+  # - name: MyOrg
+  #   # custom_virtualenv: ansible3
+  #   teams:
+  #   - name: DevOps
+  #     description: DevOps
+  #   - name: Support
+  #     description: Support
+
+
+## LDAP CONFIG
+## DEFAULT LDAP SERVER
+# awx__ldap_server_uri: ldap://ldap.example.com:3380
+# awx__ldap_bind_dn: CN=readonly,OU=people,DC=example,DC=com
+# awx__ldap_bind_password: password
+# awx__ldap_group_type: NestedMemberDNGroupType
+# awx__ldap_user_dn_template: uid=%(user)s,ou=people,dc=example,dc=com
+# awx__ldap_require_group: cn=AWX,ou=groups,dc=example,dc=com
+# awx__ldap_deny_group: ''
+# awx__ldap_user_search: []
+# awx__ldap_group_search: []
+# awx__ldap_user_attr_map: {}
+# awx__ldap_group_type_parameters: {}
+# awx__ldap_user_flags_by_group: {}
+# awx__ldap_organization_map: {}
+# awx__ldap_team_map: {}
+
+## SECONDARY LDAP SERVER, PREFIXED WITH _1_ IN VARIABLE
+# awx__ldap_1_server_uri: ldap://ldap.example.com:3380
+# awx__ldap_1_bind_dn: CN=readonly,OU=people,DC=example,DC=com
+# awx__ldap_1_bind_password: password
+# awx__ldap_1_group_type: NestedMemberDNGroupType
+# awx__ldap_1_user_dn_template: uid=%(user)s,ou=people,dc=example,dc=com
+# awx__ldap_1_require_group: cn=AWX,ou=groups,dc=example,dc=com
+# awx__ldap_1_deny_group: ''
+# awx__ldap_1_user_search: []
+# awx__ldap_1_group_search: []
+# awx__ldap_1_user_attr_map: {}
+# awx__ldap_1_group_type_parameters: {}
+# awx__ldap_1_user_flags_by_group: {}
+# awx__ldap_1_organization_map: {}
+# awx__ldap_1_team_map: {}

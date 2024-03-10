@@ -1,0 +1,23 @@
+---
+python_packages:
+  - name: setuptools_rust
+  - name: wheel
+
+python3_version: "3.11"
+
+os_packages:
+  - name: '@Development tools'
+  - name: git
+  - name: gcc
+  - name: gcc-c++
+  # - name: ansible # EPEL Repository needed to install this on OS
+  - name: nodejs
+  - name: gettext
+  - name: device-mapper-persistent-data
+  - name: lvm2
+  - name: bzip2
+  # - name: python3-pip
+  - name: python3-virtualenv
+  - name: wget
+  - name: nano
+  - name: openssl
