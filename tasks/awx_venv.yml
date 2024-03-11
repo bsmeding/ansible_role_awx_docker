@@ -23,8 +23,8 @@
     state: directory
     mode: "0775"
     recurse: true
-    owner: root
-    group: docker
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
   become: true
   when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0) and (not stat_venv_dir.stat.exists)
 
@@ -51,6 +51,7 @@
         state: latest
         virtualenv_site_packages: False
         virtualenv_command: "{{ custom_python_dir }}/Python-{{ item.python_version }}/bin/python3 -m venv --copies"
+        extra_args: "{{ awx__pip_install_extra_args }}"
         umask: "0022"
       become: false
       loop: "{{ custom_venvs }}"
@@ -60,8 +61,8 @@
         name: "{{ item.ansible_pip_packages | list }}"
         virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
         virtualenv_site_packages: False
-        # virtualenv_python: "{% if item.python_version is defined %}{{ custom_python_dir }}/Python-{{ item.python_version  }}/bin/python3{% else %}/usr/bin/python3{% endif %}"
         virtualenv_command: "{{ custom_python_dir }}/Python-{{ item.python_version }}/bin/python3"
+        extra_args: "{{ awx__pip_install_extra_args }}"
         umask: "0022"
       become: false
       loop: "{{ custom_venvs }}"
@@ -75,6 +76,7 @@
         virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
         state: latest
         virtualenv_command: "{{ python_venv_command | default('virtualenv') }}"
+        extra_args: "{{ awx__pip_install_extra_args }}"
         umask: "0022"
       become: false
       loop: "{{ custom_venvs }}"
@@ -85,6 +87,7 @@
         virtualenv: "{{ custom_venv_dir }}/{{ item.name }}"
         virtualenv_site_packages: "{{ item.install_site_packages |default('no') }}"
         virtualenv_command: "{{ python_venv_command | default('virtualenv') }}"
+        extra_args: "{{ awx__pip_install_extra_args }}"
         umask: "0022"
       become: false
       loop: "{{ custom_venvs }}"

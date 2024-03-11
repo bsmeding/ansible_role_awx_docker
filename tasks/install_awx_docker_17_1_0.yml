@@ -28,6 +28,7 @@
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
 
+# Check permissions!
 - name: Create awx__17_1_0_config_path data dir
   ansible.builtin.file:
     state: directory
@@ -47,6 +48,7 @@
     # recurse: true
   become: true
 
+# Check permissions!
 - name: Create directories postgres data dir
   ansible.builtin.file:
     path: "{{ awx__postgres_data_dir }}"
@@ -113,16 +115,17 @@
       ansible.builtin.template:
         src: "SECRET_KEY.j2"
         dest: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
-        owner: root
-        group: root
+        owner: "{{ docker_uid | default('root') }}"
+        group: "{{ docker_gid | default('root') }}"
         mode: "0600"
 
+    # Check permissions!
     - name: Copy setting templates
       ansible.builtin.template:
         src: "{{ item.file }}.j2"
         dest: "{{ awx__17_1_0_config_path }}/conf.d/{{ item.file }}"
-        owner: root
-        group: root
+        owner: "{{ docker_uid | default('root') }}"
+        group: "{{ docker_gid | default('root') }}"
         mode: "{{ item.mode }}"
       loop:
         - file: environment.sh
