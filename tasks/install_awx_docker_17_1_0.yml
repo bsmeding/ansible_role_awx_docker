@@ -108,6 +108,7 @@
         name: "{{ item }}"
       with_items:
         - "supervisor-socket"
+        - "redis-socket"
         - "rsyslog-socket"
         - "rsyslog-config"
 
@@ -165,7 +166,7 @@
           - "/usr/local/etc/redis/redis.conf"
         volumes:
           - "{{ awx__docker_compose_dir }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
-          - "{{ awx__docker_compose_dir }}/redis_socket:/var/run/redis/:rw"
+          - "redis-socket:/var/run/redis/:rw"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -188,7 +189,7 @@
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
           - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"
-          - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
+          - "redis-socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
@@ -215,7 +216,7 @@
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
           - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"
-          - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
+          - "redis-socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
