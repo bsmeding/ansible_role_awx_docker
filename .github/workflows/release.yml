@@ -36,7 +36,6 @@ jobs:
       - name: Lint code.
         run: |
           yamllint .
-          
   release:
     name: Release
     runs-on: ubuntu-latest
