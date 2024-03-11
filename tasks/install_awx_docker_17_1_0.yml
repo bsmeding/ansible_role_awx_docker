@@ -165,7 +165,7 @@
         command:
           - "/usr/local/etc/redis/redis.conf"
         volumes:
-          - "{{ awx__docker_compose_dir }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
+          - "{{ awx__17_1_0_config_path }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
           - "redis-socket:/var/run/redis/:rw"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
@@ -182,14 +182,13 @@
         command:
           - "/usr/bin/launch_awx_task.sh"
         volumes:
-          - supervisor-socket:/var/run/supervisor
-          - rsyslog-socket:/var/run/awx-rsyslog/
-          - rsyslog-config:/var/lib/awx/rsyslog/
+          - "supervisor-socket:/var/run/supervisor"
+          - "rsyslog-socket:/var/run/awx-rsyslog/"
+          - "rsyslog-config:/var/lib/awx/rsyslog/"
+          - "redis-socket:/var/run/redis/:rw"          
           - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"
-          - "redis-socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
@@ -209,14 +208,13 @@
           - "{{ awx__port_web_http }}:8052"
           - "{{ awx__port_web_https }}:8052"
         volumes:
-          - supervisor-socket:/var/run/supervisor
-          - rsyslog-socket:/var/run/awx-rsyslog/
-          - rsyslog-config:/var/lib/awx/rsyslog/
+          - "supervisor-socket:/var/run/supervisor"
+          - "rsyslog-socket:/var/run/awx-rsyslog/"
+          - "rsyslog-config:/var/lib/awx/rsyslog/"
+          - "redis-socket:/var/run/redis/:rw"          
           - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"
-          - "redis-socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
@@ -228,10 +226,12 @@
     #   args:
     #     chdir: "{{ awx__docker_compose_dir }}"
 
-    # - name: Update CA trust in awx_web container
-    #   command: docker exec awx_web '/usr/bin/update-ca-trust'
-    #   when: awx_compose_config.changed or awx_compose_start.changed
+    - name: Update CA trust in awx_web container
+      community.docker.docker_container_exec:
+        container: "awx_{{ awx__setting_awx_web_hostname }}"
+        command: '/usr/bin/update-ca-trust'
 
-    # - name: Update CA trust in awx_task container
-    #   command: docker exec awx_task '/usr/bin/update-ca-trust'
-    #   when: awx_compose_config.changed or awx_compose_start.changed
+    - name: Update CA trust in awx_task container
+      community.docker.docker_container_exec:
+        container: "awx_{{ awx__setting_awx_task_hostname }}"
+        command: '/usr/bin/update-ca-trust'
