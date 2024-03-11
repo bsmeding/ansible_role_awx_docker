@@ -58,7 +58,7 @@ awx__install_as_root: false
 skip_awx_install: false
 awx__force_reinstall: false
 
-awx__pip_install_extra_args: '--user --upgrade'
+awx__pip_install_extra_args: ''
 
 # Proxy settings
 http_proxy: ''

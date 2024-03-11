@@ -97,6 +97,7 @@
     name:
       - requests
       - netaddr
+    extra_args: "{{ awx__pip_install_extra_args }}"
 
 - name: Install AWX containers
   block:

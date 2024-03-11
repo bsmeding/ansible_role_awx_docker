@@ -23,7 +23,7 @@
     name: "{{ item }}"
     state: forcereinstall
     executable: pip3
-    extra_args: "{{ awx__pip_install_extra_args }}"
+    extra_args: "--user --upgrade {{ awx__pip_install_extra_args }}"
     umask: "0022"
   changed_when: false
   with_items: "{{ default_pip_packages }}"
@@ -42,7 +42,7 @@
     name: "{{ item.name }}"
     version: "{{ item.version | default('latest') }}"
     executable: pip3
-    extra_args: "{{ awx__pip_install_extra_args }}"
+    extra_args: "--user --upgrade {{ awx__pip_install_extra_args }}"
     umask: "0022"
   with_items: "{{ python_packages }}"
   tags:
