@@ -214,7 +214,7 @@
           - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"s
+          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"
           - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
