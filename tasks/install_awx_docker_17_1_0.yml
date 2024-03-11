@@ -32,7 +32,7 @@
 - name: Create awx__17_1_0_config_path data dir
   ansible.builtin.file:
     state: directory
-    path: "{{ awx__17_1_0_config_path }}/conf.d"
+    path: "{{ awx__17_1_0_config_path }}"
     mode: "0750"
     recurse: true
     owner: "{{ docker_uid | default('root') }}"
@@ -123,7 +123,7 @@
     - name: Copy setting templates
       ansible.builtin.template:
         src: "{{ item.file }}.j2"
-        dest: "{{ awx__17_1_0_config_path }}/conf.d/{{ item.file }}"
+        dest: "{{ awx__17_1_0_config_path }}/{{ item.file }}"
         owner: "{{ docker_uid | default('root') }}"
         group: "{{ docker_gid | default('root') }}"
         mode: "{{ item.mode }}"
@@ -184,11 +184,10 @@
           - supervisor-socket:/var/run/supervisor
           - rsyslog-socket:/var/run/awx-rsyslog/
           - rsyslog-config:/var/lib/awx/rsyslog/
-          # - "{{ awx__docker_compose_dir }}/SECRET_KEY:/etc/tower/SECRET_KEY"
-          # - "{{ awx__docker_compose_dir }}/environment.sh:/etc/tower/conf.d/environment.sh"
-          # - "{{ awx__docker_compose_dir }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          # - "{{ awx__docker_compose_dir }}/settings.py:/etc/tower/settings.py:rw"s
-          - "{{ awx__17_1_0_config_path }}:/etc/tower:rw"
+          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"s
           - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
@@ -212,11 +211,10 @@
           - supervisor-socket:/var/run/supervisor
           - rsyslog-socket:/var/run/awx-rsyslog/
           - rsyslog-config:/var/lib/awx/rsyslog/
-          # - "{{ awx__docker_compose_dir }}/SECRET_KEY:/etc/tower/SECRET_KEY"
-          # - "{{ awx__docker_compose_dir }}/environment.sh:/etc/tower/conf.d/environment.sh"
-          # - "{{ awx__docker_compose_dir }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          # - "{{ awx__docker_compose_dir }}/settings.py:/etc/tower/settings.py:rw"s
-          - "{{ awx__17_1_0_config_path }}:/etc/tower:rw"
+          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          - "{{ awx__17_1_0_config_path }}/settings.py:/etc/tower/settings.py:rw"s
           - "{{ awx__redis_socket_dir }}/redis_socket:/var/run/redis/:rw"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
