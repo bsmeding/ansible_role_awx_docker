@@ -32,8 +32,8 @@ awx__repo: https://github.com/ansible/awx.git
 awx__repo_dir: "/tmp/awx"
 awx__version: 17.1.0
 awx__17_1_0_awx_image: "ansible/awx:17.1.0"
-awx__postgres_data_dir: "{{ awx__host_root }}/pgdocker"
 awx__17_1_0_postgres_image: "postgres:12"
+awx__postgres_data_dir: "{{ awx__host_root }}/pgdocker/{{ (awx__17_1_0_postgres_image | split(':'))[1] }}/data"
 awx__17_1_0_config_path: "{{ awx__host_root }}/config"
 awx__17_1_0_redis_image: "redis"
 awx__force_run_migrate: false

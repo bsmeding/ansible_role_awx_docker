@@ -32,7 +32,6 @@
   ansible.builtin.file:
     state: directory
     path: "{{ awx__17_1_0_config_path }}"
-    state: directory
     mode: "0770"
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
@@ -53,7 +52,7 @@
     state: present
     gid: 999
 
-- name: Add user "postgres"  
+- name: Add user "postgres"
   ansible.builtin.user:
     name: postgres
     groups: docker
@@ -72,6 +71,8 @@
     mode: "0770"
     owner: "postgres"
     group: "postgres"
+    recurse: true
+  changed_when: false    # Because recurse is used, always changed
   become: true
 
 - name: Custom custom_venv_dir found
@@ -90,6 +91,7 @@
         group: "{{ docker_gid | default('root') }}"
         recurse: true
       become: true
+      changed_when: false
       when: custom_venv_dir is defined and (custom_venvs is defined and custom_venvs|length>0) and (not stat_venv_dir.stat.exists)
 
     - name: Check if VenV python dir exist
@@ -106,6 +108,7 @@
         group: "{{ docker_gid | default('root') }}"
         recurse: true
       become: true
+      changed_when: false
       when: custom_python_dir is defined and (custom_venvs is defined and custom_venvs|length>0)  and (not stat_python_dir.stat.exists)
   when: custom_venv_dir is defined or awx__disable_git_ssl_verify|bool
 
@@ -161,13 +164,12 @@
         name: "awx_postgres"
         image: "{{ awx__17_1_0_postgres_image }}"
         restart_policy: unless-stopped
-        # user: "postgres:{{ docker_gid | default(1001) }}"
         networks:
           - name: "awx"
         env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_postgres) }}"
-        volumes: 
+        volumes:
           - "/etc/passwd:/etc/passwd:ro"
-          - "{{ awx__postgres_data_dir }}/12/data/:/var/lib/postgresql/data:Z"
+          - "{{ awx__postgres_data_dir }}/:/var/lib/postgresql/data:Z"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -240,11 +242,11 @@
         log_options: "{{ awx__17_1_0_log_options }}"
       register: awx_task_container
 
-    - name: Run AWX migrate
+    - name: Run AWX migrate (can take more than 10 minutes!)
       community.docker.docker_container_exec:
         container: "awx_{{ awx__setting_awx_web_hostname }}"
         command: 'awx-manage migrate --no-input'
-      changed_when: false  
+      changed_when: false
       when: (awx_task_container is defined and awx_task_container.changed) or awx__force_run_migrate|bool
 
     - name: Update CA trust in awx_web container
@@ -257,4 +259,4 @@
       community.docker.docker_container_exec:
         container: "awx_{{ awx__setting_awx_web_hostname }}"
         command: '/usr/bin/update-ca-trust'
-      changed_when: false  
+      changed_when: false
