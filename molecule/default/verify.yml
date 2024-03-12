@@ -3,5 +3,10 @@
   hosts: all
   become: false
   tasks:
+    - name: Include default vars
+      ansible.builtin.include_vars:
+        dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
+        extensions:
+          - "yml"  
     - name: Configure base sessings
       ansible.builtin.include_tasks: ../../tasks/config_awx.yml

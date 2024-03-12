@@ -22,7 +22,6 @@
     path: "{{ custom_venv_dir }}"
     state: directory
     mode: "0775"
-    recurse: true
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
   become: true

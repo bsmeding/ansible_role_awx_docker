@@ -8,9 +8,16 @@
   include_vars: "{{ ansible_os_family }}_docker.yml"
   when: not skip_awx_install|bool
 
+- name: Check AWX root dir is set
+  ansible.builtin.file:
+    state: directory
+    path: "{{ awx__host_root }}"
+    mode: "0750"
+    owner: "{{ docker_uid | default('root') }}"
+    group: "{{ docker_gid | default('root') }}"
+
 - name: Install packages when not already installed
   block:
-
     - name: Install Custom VenV (only for version below 18.0.0)
       include_tasks: awx_venv.yml
       when: custom_venvs is defined and custom_venvs|length>0 and (awx__version is version('18.0.0', '<')) and (not skip_awx_install|bool)
