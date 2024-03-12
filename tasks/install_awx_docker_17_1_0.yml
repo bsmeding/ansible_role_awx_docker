@@ -24,19 +24,19 @@
   ansible.builtin.file:
     state: directory
     path: "{{ awx__project_data_dir }}"
-    mode: "0755"
+    mode: "0770"
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
 
-# Check permissions!
 - name: Create awx__17_1_0_config_path data dir
   ansible.builtin.file:
     state: directory
     path: "{{ awx__17_1_0_config_path }}"
-    mode: "0750"
-    recurse: true
+    state: directory
+    mode: "0770"
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
+  become: true
 
 - name: Create redis_socket dir
   ansible.builtin.file:
@@ -45,18 +45,33 @@
     mode: "0777"
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
-    # recurse: true
   become: true
 
-# Check permissions!
-- name: Create directories postgres data dir
+- name: Ensure group "postgres" exists with correct gid
+  ansible.builtin.group:
+    name: postgres
+    state: present
+    gid: 999
+
+- name: Add user "postgres"  
+  ansible.builtin.user:
+    name: postgres
+    groups: docker
+    shell: /sbin/nologin
+    uid: 999
+    create_home: no
+    append: yes
+    comment: "Postgres data user"
+    state: present
+  become: true
+
+- name: Create directories postgres root dir
   ansible.builtin.file:
     path: "{{ awx__postgres_data_dir }}"
     state: directory
     mode: "0770"
-    owner: "{{ docker_uid | default('root') }}"
-    group: "{{ docker_gid | default('root') }}"
-    recurse: true
+    owner: "postgres"
+    group: "postgres"
   become: true
 
 - name: Custom custom_venv_dir found
@@ -108,7 +123,6 @@
         name: "{{ item }}"
       with_items:
         - "supervisor-socket"
-        - "redis-socket"
         - "rsyslog-socket"
         - "rsyslog-config"
 
@@ -116,8 +130,8 @@
       ansible.builtin.template:
         src: "SECRET_KEY.j2"
         dest: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
-        owner: "{{ docker_uid | default('root') }}"
-        group: "{{ docker_gid | default('root') }}"
+        owner: root #   container runs as root user
+        group: root #   container runs as root user
         mode: "0600"
 
     # Check permissions!
@@ -125,8 +139,8 @@
       ansible.builtin.template:
         src: "{{ item.file }}.j2"
         dest: "{{ awx__17_1_0_config_path }}/{{ item.file }}"
-        owner: "{{ docker_uid | default('root') }}"
-        group: "{{ docker_gid | default('root') }}"
+        owner: root #   container runs as root user
+        group: root #   container runs as root user
         mode: "{{ item.mode }}"
       loop:
         - file: environment.sh
@@ -147,10 +161,13 @@
         name: "awx_postgres"
         image: "{{ awx__17_1_0_postgres_image }}"
         restart_policy: unless-stopped
+        # user: "postgres:{{ docker_gid | default(1001) }}"
         networks:
           - name: "awx"
         env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_postgres) }}"
-        volumes: "{{ awx__postgres_data_dir }}/12/data/:/var/lib/postgresql/data:Z"
+        volumes: 
+          - "/etc/passwd:/etc/passwd:ro"
+          - "{{ awx__postgres_data_dir }}/12/data/:/var/lib/postgresql/data:Z"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -166,7 +183,7 @@
           - "/usr/local/etc/redis/redis.conf"
         volumes:
           - "{{ awx__17_1_0_config_path }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
-          - "redis-socket:/var/run/redis/:rw"
+          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -185,7 +202,7 @@
           - "supervisor-socket:/var/run/supervisor"
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
-          - "redis-socket:/var/run/redis/:rw"
+          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
           - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
@@ -211,27 +228,33 @@
           - "supervisor-socket:/var/run/supervisor"
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
-          - "redis-socket:/var/run/redis/:rw"
+          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
           - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          - "{{ awx__17_1_0_config_path }}/nginx.conf:/etc/nginx/nginx.conf:ro"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
           - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
+      register: awx_task_container
 
-    # - name: Run migrations in task container
-    #   shell: docker-compose run --rm --service-ports task awx-manage migrate --no-input
-    #   args:
-    #     chdir: "{{ awx__docker_compose_dir }}"
+    - name: Run AWX migrate
+      community.docker.docker_container_exec:
+        container: "awx_{{ awx__setting_awx_web_hostname }}"
+        command: 'awx-manage migrate --no-input'
+      changed_when: false  
+      when: (awx_task_container is defined and awx_task_container.changed) or awx__force_run_migrate|bool
 
     - name: Update CA trust in awx_web container
       community.docker.docker_container_exec:
         container: "awx_{{ awx__setting_awx_web_hostname }}"
         command: '/usr/bin/update-ca-trust'
+      changed_when: false
 
     - name: Update CA trust in awx_task container
       community.docker.docker_container_exec:
-        container: "awx_{{ awx__setting_awx_task_hostname }}"
+        container: "awx_{{ awx__setting_awx_web_hostname }}"
         command: '/usr/bin/update-ca-trust'
+      changed_when: false  

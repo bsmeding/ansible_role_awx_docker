@@ -36,6 +36,7 @@ awx__postgres_data_dir: "{{ awx__host_root }}/pgdocker"
 awx__17_1_0_postgres_image: "postgres:12"
 awx__17_1_0_config_path: "{{ awx__host_root }}/config"
 awx__17_1_0_redis_image: "redis"
+awx__force_run_migrate: false
 awx__17_1_0_default_env:
   TZ: "{{ container_time_zone | default('Europe/Paris') }}"
   PUID: "{{ docker_uid|default(1040) }}"
