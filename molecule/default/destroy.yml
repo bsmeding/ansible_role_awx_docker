@@ -1,0 +1,26 @@
+---
+- name: Destroy - remove containers
+  hosts: all
+  become: false
+  tasks:
+    - name: Include default vars
+      ansible.builtin.include_vars:
+        dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
+        extensions:
+          - "yml"  
+    - name: Remove database
+      community.docker.docker_container:
+        name: awx_postgres
+        state: absent
+    - name: Remove Redis 
+      community.docker.docker_container:
+        name: "awx_redis"
+        state: absent
+    - name: Remove AWX Task
+      community.docker.docker_container:
+        name: "awx_{{ awx__setting_awx_task_hostname }}"
+        state: absent
+    - name: Remove AWX Web
+      community.docker.docker_container:
+        name: "awx_{{ awx__setting_awx_web_hostname }}"
+        state: absent
