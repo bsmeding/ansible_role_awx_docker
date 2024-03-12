@@ -7,12 +7,12 @@
       ansible.builtin.include_vars:
         dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
         extensions:
-          - "yml"  
+          - "yml"
     - name: Remove database
       community.docker.docker_container:
         name: awx_postgres
         state: absent
-    - name: Remove Redis 
+    - name: Remove Redis
       community.docker.docker_container:
         name: "awx_redis"
         state: absent
