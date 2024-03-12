@@ -4,4 +4,4 @@
   become: false
   tasks:
     - name: Configure base sessings
-      ansible.builtin.include_tasks: config_awx.yml
+      ansible.builtin.include_tasks: ../../tasks/config_awx.yml
