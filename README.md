@@ -1,5 +1,9 @@
 ---
 # Ansible AWX install role
+
+![test status](https://github.com/bsmeding/ansible_role_awx_docker/actions/workflows/ci.yml/badge.svg) 
+Role is tested on, Ubuntu with Docker installed via my role bsmeding.docker on Linux distribution.
+
 This role will install AWX in docker containers on the host, currently the latest docker version (17.1.0) is stable and tested
 
 Higher versions will be build in docker container and are not officialy supported by Ansible for production use.
