@@ -7,6 +7,6 @@
       ansible.builtin.include_vars:
         dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
         extensions:
-          - "yml"  
+          - "yml"
     - name: Configure base sessings
       ansible.builtin.include_tasks: ../../tasks/config_awx.yml

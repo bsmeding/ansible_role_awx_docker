@@ -8,6 +8,9 @@
         dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
         extensions:
           - "yml"
+    - name: Install pip package for Destroy
+      ansible.builtin.pip:
+        name: docker
     - name: Remove database
       community.docker.docker_container:
         name: awx_postgres
