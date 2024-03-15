@@ -21,7 +21,7 @@
   ansible.builtin.file:
     path: "{{ custom_venv_dir }}"
     state: directory
-    mode: "0775"
+    mode: "{% if docker_uid is defined %}0775{% else %}0777{% endif %}"    # All users need access to VenV
     owner: "{{ docker_uid | default('root') }}"
     group: "{{ docker_gid | default('root') }}"
   become: true
