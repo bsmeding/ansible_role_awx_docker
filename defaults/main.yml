@@ -72,7 +72,6 @@ default_pip_packages:
   - pip
   - psutil
 
-
 # Only for version 17.1 and below:
 custom_venv_dir: /opt/awx/venv
 custom_python_dir: /opt/python

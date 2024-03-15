@@ -18,18 +18,6 @@
   become: true
   when: not skip_awx_install|bool
 
-- name: Install default pip packages
-  ansible.builtin.pip:
-    name: "{{ item }}"
-    state: forcereinstall
-    executable: pip3
-    extra_args: "--user --upgrade {{ awx__pip_install_extra_args }}"
-    umask: "0022"
-  changed_when: false
-  with_items: "{{ default_pip_packages }}"
-  become: "{{ awx__install_as_root }}"
-  when: not skip_awx_install|bool
-
 - name: Install docker-compose
   ansible.builtin.get_url:
     url: "https://github.com/docker/compose/releases/download/{{ awx__install_docker_compose_version }}/docker-compose-Linux-x86_64"

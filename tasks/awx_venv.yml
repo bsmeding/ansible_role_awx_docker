@@ -5,17 +5,18 @@
     path: "{{ custom_venv_dir }}"
   register: stat_venv_dir
 
-- name: Install default pip packages
-  ansible.builtin.pip:
-    name: "{{ item }}"
-    state: forcereinstall
-    executable: pip3
-    extra_args: "{{ awx__pip_install_extra_args }}"
-    umask: "0022"
-  changed_when: false
-  with_items: "{{ default_pip_packages }}"
-  become: "{{ awx__install_as_root }}"
-  when: not skip_awx_install|bool
+# - name: Install default pip packages
+#   ansible.builtin.pip:
+#     name: "{{ item }}"
+#     state: forcereinstall
+#     executable: pip3
+#     extra_args: "{{ awx__pip_install_extra_args }}"
+#     umask: "0022"
+#   changed_when: false
+#   with_items: "{{ default_pip_packages }}"
+#   ignore_errors: true    # Not always needed to install local packages
+#   become: "{{ awx__install_as_root }}"
+#   when: not skip_awx_install|bool
 
 - name: Create VenV root {{ custom_venv_dir }} directory
   ansible.builtin.file:
