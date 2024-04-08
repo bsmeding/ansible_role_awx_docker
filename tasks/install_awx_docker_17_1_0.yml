@@ -51,6 +51,7 @@
     name: postgres
     state: present
     gid: 999
+    non_unique: true      # when provisioning with molecule test or vagrant is is possible that id already in use
 
 - name: Add user "postgres"
   ansible.builtin.user:
