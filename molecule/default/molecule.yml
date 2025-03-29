@@ -1,8 +1,14 @@
 driver:
-  name: delegated
+  name: docker
 
 platforms:
-  - name: localhost
+  - name: instance
+    image: geerlingguy/docker-ubuntu2204-ansible
+    pre_build_image: true
+    privileged: true  # If you need Docker inside Docker
 
 provisioner:
+  name: ansible
+
+verifier:
   name: ansible
