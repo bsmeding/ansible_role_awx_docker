@@ -50,6 +50,16 @@ jobs:
           # - fedora40
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "Freeing up disk space..."
+          docker system prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
+          sudo apt-get clean
+          df -h
+
       - name: Check out the codebase.
         uses: actions/checkout@v4
         with:
