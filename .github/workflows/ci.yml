@@ -29,9 +29,12 @@ jobs:
             requests
         working-directory: bsmeding.awx_docker
 
-      - name: Debug Molecule drivers
-        run: molecule list --debug
+      - name: Show Molecule environment + debug test
+        run: |
+          molecule --version
+          molecule test --debug
         working-directory: bsmeding.awx_docker
+        continue-on-error: true
 
       - name: Run Molecule test
         run: molecule test
