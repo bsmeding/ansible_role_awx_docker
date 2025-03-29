@@ -5,7 +5,9 @@ platforms:
   - name: instance
     image: geerlingguy/docker-ubuntu2204-ansible
     pre_build_image: true
-    privileged: true  # If you need Docker inside Docker
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 provisioner:
   name: ansible
