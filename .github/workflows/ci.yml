@@ -52,7 +52,9 @@ jobs:
           pip install --no-cache-dir \
             ansible-core==2.16.4 \
             molecule==24.2.1 \
-            molecule-plugins[docker,dekegated]==23.5.3 \
+            molecule-plugins==23.5.3 \
+            molecule-docker==2.1.0 \
+            molecule-delegated==2.1.0 \
             netaddr requests
 
       - name: Run Molecule with delegated driver
