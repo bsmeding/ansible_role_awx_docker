@@ -13,6 +13,10 @@ awx__host_root: '/opt/awx'
 awx__setting_awx_task_hostname: 'task'
 awx__setting_awx_web_hostname: 'web'
 
+# Used for setting Docker user as permission. This variable is set by role bsmeding.docker if running that role first you dont need to set this variables
+# docker_uid: ''    
+# docker_gid: ''
+
 # awx__postgres_host: 'postgres_server1' # External server
 # awx__postgres_host_port: '5432'
 awx__postgres_username: 'awxpguser'
