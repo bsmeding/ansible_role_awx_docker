@@ -19,22 +19,21 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install Ansible & Molecule (delegated built-in)
+      
+      - name: Install Molecule & Ansible
         run: |
           pip install --no-cache-dir \
             ansible-core==2.16.4 \
             molecule==24.2.1 \
+            molecule-delegated==24.2.1 \
             netaddr \
             requests
         working-directory: bsmeding.awx_docker
 
-      - name: Show Molecule environment + debug test
-        run: |
-          molecule --version
-          molecule test --debug
+      - name: Show installed packages
+        run: pip freeze
         working-directory: bsmeding.awx_docker
-        continue-on-error: true
+      
 
       - name: Run Molecule test
         run: molecule test
