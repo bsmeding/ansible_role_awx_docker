@@ -52,6 +52,7 @@ jobs:
           # - fedora40
 
     steps:
+      # AWX needs a lot of space, not always available at free runners
       - name: Free up disk space
         run: |
           echo "Freeing up disk space..."
@@ -61,6 +62,13 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           sudo apt-get clean
           df -h
+
+      - name: Aggressively clean Docker cache
+        run: |
+          docker system prune -af --volumes
+          docker builder prune -af
+          df -h
+          df -i
 
       - name: Check out the codebase.
         uses: actions/checkout@v4
