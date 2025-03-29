@@ -13,7 +13,7 @@
   
   defaults:
     run:
-      working-directory: 'bsmeding.awx_docker'
+      working-directory: 'bsmeding.docker'
   
   jobs:
   
