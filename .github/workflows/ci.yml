@@ -17,11 +17,6 @@ jobs:
     name: Molecule test (Docker)
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:dind
-        privileged: true
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
