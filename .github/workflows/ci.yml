@@ -57,6 +57,4 @@ jobs:
 
       - name: Run Molecule with delegated driver
         run: |
-          cd bsmeding.awx_docker
           molecule test
-      
