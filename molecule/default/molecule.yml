@@ -33,3 +33,7 @@ platforms:
 
 provisioner:
   name: ansible
+  inventory:
+    host_vars:
+      localhost:
+        molecule_is_test: true
