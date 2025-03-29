@@ -114,13 +114,6 @@
       when: not stat_python_dir.stat.exists
   when: custom_venv_dir is defined or awx__disable_git_ssl_verify|bool
 
-- name: Install pip modules
-  ansible.builtin.pip:
-    name:
-      - requests
-      - netaddr
-    extra_args: "{{ awx__pip_install_extra_args }}"
-
 - name: Install AWX containers
   block:
     - name: Create docker volumes

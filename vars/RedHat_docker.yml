@@ -2,6 +2,8 @@
 python_packages:
   - name: setuptools_rust
   - name: wheel
+  - name: netaddr
+  - name: requests
 
 python3_version: "3.11"
 
