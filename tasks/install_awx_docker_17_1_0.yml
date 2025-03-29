@@ -56,7 +56,7 @@
 - name: Add user "postgres"
   ansible.builtin.user:
     name: postgres
-    groups: docker
+    groups: "{{ docker_gid | default('root') }}"
     shell: /sbin/nologin
     uid: 999
     create_home: no
