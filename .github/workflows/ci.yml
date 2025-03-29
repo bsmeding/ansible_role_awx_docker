@@ -8,10 +8,6 @@ name: CI
   schedule:
     - cron: "0 7 * * 0"
 
-defaults:
-  run:
-    working-directory: 'bsmeding.awx_docker'
-
 jobs:
   test:
     name: Molecule test (Docker)
