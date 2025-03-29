@@ -1,42 +1,62 @@
-name: Molecule CI
+---
+  name: CI
+  'on':
+    pull_request:
+    push:
+      branches:
+        - main
+    schedule:
+      - cron: "0 7 * * 0"
+  
+  defaults:
+    run:
+      working-directory: 'bsmeding.awx_docker'
+  
+  jobs:
+    lint:
+      name: Lint
+      runs-on: ubuntu-latest
+      steps:
+        - name: Check out the codebase.
+          uses: actions/checkout@v4
+          with:
+            path: 'bsmeding.awx_docker'
+  
+        - name: Set up Python 3.
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.x'
+  
+        - name: Install test dependencies.
+          run: pip3 install yamllint
+  
+        - name: Lint code.
+          run: |
+            yamllint .
+  
+    molecule:
+      name: Molecule
+      runs-on: ubuntu-latest
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-jobs:
-  molecule:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          path: bsmeding.awx_docker
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install Molecule & Ansible
-        run: |
-          pip install --no-cache-dir \
-            ansible-core==2.16.4 \
-            molecule==24.2.1 \
-            molecule-delegated==24.2.1 \
-            netaddr \
-            requests
-        working-directory: bsmeding.awx_docker
-
-      - name: Show installed packages
-        run: pip freeze
-        working-directory: bsmeding.awx_docker
-      
-
-      - name: Run Molecule test
-        run: molecule test
-        working-directory: bsmeding.awx_docker
-        env:
-          MOLECULE_DRIVER_NAME: delegated
+  
+      steps:
+        - name: Check out the codebase.
+          uses: actions/checkout@v4
+          with:
+            path: 'bsmeding.awx_docker'
+  
+        - name: Set up Python 3.
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.x'
+  
+        - name: Install test dependencies.
+          run: pip3 install ansible==9.5.1 molecule==24.2.1 molecule-plugins[docker]==23.5.3 docker==7.0.0 netaddr==1.2.1 requests==2.31.0
+  
+        - name: Run Molecule tests.
+          run: molecule test
+          env:
+            PY_COLORS: '1'
+            ANSIBLE_FORCE_COLOR: '1'
+            MOLECULE_DISTRO: ${{ matrix.distro }}
+  
