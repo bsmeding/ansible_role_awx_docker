@@ -38,28 +38,29 @@ jobs:
 
   molecule:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          path: 'bsmeding.awx_docker'
+          path: bsmeding.awx_docker
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
-      - name: Install Molecule & Ansible
+      - name: Install Molecule + Ansible
         run: |
           pip install --no-cache-dir \
             ansible-core==2.16.4 \
             molecule==24.2.1 \
             molecule-plugins[docker]==23.5.3 \
             netaddr requests
+        working-directory: bsmeding.awx_docker
 
-      - name: Run Molecule with delegated driver
-        run: |
-          molecule test
+      - name: Run Molecule test
+        run: molecule test
         working-directory: bsmeding.awx_docker
         env:
           MOLECULE_DRIVER_NAME: delegated
