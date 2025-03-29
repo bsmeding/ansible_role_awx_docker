@@ -8,9 +8,9 @@ name: CI
   schedule:
     - cron: "0 7 * * 0"
 
-defaults:
-  run:
-    working-directory: 'bsmeding.awx_docker'
+# defaults:
+#   run:
+#     working-directory: 'bsmeding.awx_docker'
 
 jobs:
   lint:
@@ -29,10 +29,12 @@ jobs:
 
       - name: Install test dependencies.
         run: pip3 install yamllint
+        working-directory: bsmeding.awx_docker
 
       - name: Lint code.
         run: |
           yamllint .
+        working-directory: bsmeding.awx_docker
 
   molecule:
     name: Molecule
@@ -72,9 +74,11 @@ jobs:
 
       - name: Install test dependencies.
         run: pip3 install ansible molecule==24.2.1 molecule-plugins[docker]==23.5.3 docker==7.0.0 netaddr==1.2.1 requests==2.31.0
+        working-directory: bsmeding.awx_docker
 
       - name: Run Molecule tests.
         run: molecule test
+        working-directory: bsmeding.awx_docker
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
