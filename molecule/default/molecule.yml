@@ -3,7 +3,7 @@ driver:
 
 platforms:
   - name: instance
-    image: geerlingguy/docker-ubuntu2204-ansible
+    image: bsmeding/ansible_cicd_ubuntu2204
     pre_build_image: true
     privileged: true
     volumes:
