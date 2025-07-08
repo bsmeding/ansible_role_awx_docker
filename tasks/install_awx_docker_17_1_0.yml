@@ -124,14 +124,6 @@
         - "rsyslog-socket"
         - "rsyslog-config"
 
-    - name: Copy sec key templates
-      ansible.builtin.template:
-        src: "SECRET_KEY.j2"
-        dest: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
-        owner: root #   container runs as root user
-        group: root #   container runs as root user
-        mode: "0600"
-
     # Check permissions!
     - name: Copy setting templates
       ansible.builtin.template:
@@ -149,7 +141,19 @@
           mode: "0600"
         - file: redis.conf
           mode: "0664"
+        - file: SECRET_KEY.j2
+          mode: "0600"
 
+    - name: Check SECRET_KEY file type
+      ansible.builtin.stat:
+        path: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
+      register: secret_key_stat
+
+    - name: Fail if SECRET_KEY is a directory
+      ansible.builtin.fail:
+        msg: "SECRET_KEY is incorrectly a directory!"
+      when: secret_key_stat.stat.isdir
+      
     - name: Create a network for AWX
       community.docker.docker_network:
         name: "awx"
@@ -200,7 +204,7 @@
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
           - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
-          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
           - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
@@ -227,7 +231,7 @@
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
           - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
-          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
           - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
           - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
           - "{{ awx__17_1_0_config_path }}/nginx.conf:/etc/nginx/conf.g/default.conf:ro"
