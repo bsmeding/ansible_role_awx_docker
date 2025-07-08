@@ -141,7 +141,7 @@
           mode: "0600"
         - file: redis.conf
           mode: "0664"
-        - file: SECRET_KEY.j2
+        - file: SECRET_KEY
           mode: "0600"
 
     - name: Check SECRET_KEY file type
