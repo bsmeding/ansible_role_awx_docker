@@ -153,7 +153,11 @@
       ansible.builtin.fail:
         msg: "SECRET_KEY is incorrectly a directory!"
       when: secret_key_stat.stat.isdir
-      
+
+    - name: Print absolute SECRET_KEY path
+      debug:
+        msg: "SECRET_KEY full path: {{ awx__17_1_0_config_path }}/SECRET_KEY"
+        
     - name: Create a network for AWX
       community.docker.docker_network:
         name: "awx"
