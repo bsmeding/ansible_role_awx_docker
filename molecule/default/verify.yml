@@ -19,7 +19,7 @@
     - name: Fail fast if port is already bound
       ansible.builtin.wait_for:
         port: "{{ awx__port_web_http }}"
-        host: 127.0.0.1
+        host: "awx_{{ awx__setting_awx_web_hostname }}"
         timeout: 30
         state: started
 
