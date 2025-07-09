@@ -143,20 +143,6 @@
           mode: "0664"
         - file: SECRET_KEY
           mode: "0600"
-
-    - name: Check SECRET_KEY file type
-      ansible.builtin.stat:
-        path: "{{ awx__17_1_0_config_path }}/SECRET_KEY"
-      register: secret_key_stat
-
-    - name: Fail if SECRET_KEY is a directory
-      ansible.builtin.fail:
-        msg: "SECRET_KEY is incorrectly a directory!"
-      when: secret_key_stat.stat.isdir
-
-    - name: Print absolute SECRET_KEY path
-      debug:
-        msg: "SECRET_KEY full path: {{ awx__17_1_0_config_path }}/SECRET_KEY"
         
     - name: Create a network for AWX
       community.docker.docker_network:
@@ -192,10 +178,6 @@
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
-    - name: Show file from host Docker perspective
-      command: "docker run --rm -v {{ awx__17_1_0_config_path }}:/data busybox ls -l /data/SECRET_KEY"
-      ignore_errors: true
-      
     - name: Run Task container
       community.docker.docker_container:
         name: "awx_{{ awx__setting_awx_task_hostname }}"
