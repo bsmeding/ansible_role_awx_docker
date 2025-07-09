@@ -14,8 +14,9 @@
         host: localhost
         port: "{{ awx__port_web_http }}"
         delay: 120
+        timeout: 600
 
-    - name: Check if Nautobot login page is running
+    - name: Check if AWX login page is running
       ansible.builtin.uri:
         url: "http://localhost:{{ awx__port_web_http }}"
         return_content: true
