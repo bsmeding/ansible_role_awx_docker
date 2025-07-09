@@ -215,7 +215,7 @@
         env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_web) }}"
         ports:
           - "{{ awx__port_web_http }}:8052"
-          - "{{ awx__port_web_https }}:8052"
+          - "{{ awx__port_web_https }}:8053"
         volumes:
           - "supervisor-socket:/var/run/supervisor"
           - "rsyslog-socket:/var/run/awx-rsyslog/"

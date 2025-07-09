@@ -6,6 +6,8 @@ platforms:
     image: bsmeding/ansible_cicd_ubuntu2204
     pre_build_image: true
     privileged: true
+    published_ports:
+      - 9080:8052    
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/awx_config:/tmp/awx_config
