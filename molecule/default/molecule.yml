@@ -8,6 +8,7 @@ platforms:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/awx_config:/tmp/awx_config
 
 provisioner:
   name: ansible

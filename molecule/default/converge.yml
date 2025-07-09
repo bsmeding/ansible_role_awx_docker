@@ -2,7 +2,9 @@
 - name: Converge
   hosts: all
   become: false
-
+  vars:
+    # Set bind to tmp because DiD setup (See molecule binding)
+    awx__17_1_0_config_path: /tmp/awx_config
   pre_tasks:
     - name: Update apt cache
       ansible.builtin.apt:

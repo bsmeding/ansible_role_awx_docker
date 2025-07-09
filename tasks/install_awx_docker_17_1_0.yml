@@ -192,6 +192,10 @@
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
+    - name: Show file from host Docker perspective
+      command: "docker run --rm -v {{ awx__17_1_0_config_path }}:/data busybox ls -l /data/SECRET_KEY"
+      ignore_errors: true
+      
     - name: Run Task container
       community.docker.docker_container:
         name: "awx_{{ awx__setting_awx_task_hostname }}"
