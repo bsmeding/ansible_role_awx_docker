@@ -1,10 +1,16 @@
 ---
-- name: Converge
+- name: Converge AWX Docker
   hosts: all
-  become: false
+  become: true
   vars:
-    # Set bind to tmp because DiD setup (See molecule binding)
-    awx__17_1_0_config_path: /tmp/awx_config
+    awx__port_http: 80
+    awx__port_https: 443
+    awx__network: 'test_awx_network'
+    awx__network_cidr: '172.16.24.0/24'
+    awx__remove_existing_container: false
+    awx__remove_existing_home_dir: false
+    # Skip Docker service management in test environment
+    docker_service_manage: false
   pre_tasks:
     - name: Update apt cache
       ansible.builtin.apt:
@@ -12,25 +18,30 @@
         cache_valid_time: 600
       when: ansible_os_family == 'Debian'
 
-    # - name: Debug systemctl status
-    #   command: systemctl is-system-running
-    #   register: sys_state
-    #   ignore_errors: true
-
-    # - debug: var=sys_state.stdout
-
     - name: Wait for systemd to complete initialization
       ansible.builtin.command: systemctl is-system-running
       register: systemctl_status
-      until: systemctl_status.stdout in ['running', 'degraded']
-      retries: 10
-      delay: 2
+      until: >
+        'running' in systemctl_status.stdout or
+        'degraded' in systemctl_status.stdout
+      retries: 30
+      delay: 5
+      when: ansible_service_mgr == 'systemd'
       changed_when: false
       failed_when: systemctl_status.rc > 1
-      when:
-        - ansible_service_mgr == 'systemd'
-        - ansible_virtualization_type != "docker"
+
+    - name: Check if Docker socket exists
+      stat:
+        path: /var/run/docker.sock
+      register: docker_socket
+
+    - name: Ensure Docker socket permissions are correct
+      file:
+        path: /var/run/docker.sock
+        mode: '0666'
+      when: docker_socket.stat.exists and docker_socket.stat.exists
 
   roles:
-    # - role: bsmeding.docker
+    - role: bsmeding.docker
+      when: docker_socket.stat.exists and docker_socket.stat.exists
     - role: bsmeding.awx_docker
