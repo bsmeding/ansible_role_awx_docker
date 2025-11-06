@@ -37,7 +37,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip
           pip install --no-cache-dir \
-            ansible-core==2.16.4 \
+            ansible-core==2.20.0 \
             molecule==24.2.1 \
             molecule-plugins[docker]==23.5.3 \
             docker \
