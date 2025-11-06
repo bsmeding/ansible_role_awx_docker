@@ -17,6 +17,7 @@
         update_cache: true
         cache_valid_time: 600
       when: ansible_os_family == 'Debian'
+      changed_when: false
 
     - name: Wait for systemd to complete initialization
       ansible.builtin.command: systemctl is-system-running
