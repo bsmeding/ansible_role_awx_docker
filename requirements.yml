@@ -2,7 +2,8 @@
 roles:
   - src: bsmeding.docker
 collections:
-  # Pin to a known-good release to avoid intermittent Galaxy resolution errors
-  # on the latest community.docker metadata.
+  # Keep in sync with molecule/default/collections.yml (Molecule + CI use that file).
   - name: community.docker
     version: 4.8.1
+  - name: ansible.posix
+    version: 1.5.4

@@ -1,0 +1,9 @@
+---
+# Installed by Molecule's galaxy dependency (collection install). Pinned so
+# ansible-compat does not resolve community.docker:>=3.4.11 to a broken Galaxy
+# metadata release (e.g. 5.0.5 returning HTTP 500).
+collections:
+  - name: community.docker
+    version: 4.8.1
+  - name: ansible.posix
+    version: 1.5.4

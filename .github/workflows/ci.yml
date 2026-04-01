@@ -44,5 +44,11 @@ jobs:
             netaddr \
             requests
 
+      # Molecule runs require_collection() before galaxy installs; the docker
+      # driver asks for community.docker>=3.4.11, which resolves to latest and
+      # can hit Galaxy API errors. Pre-install pinned versions so the check passes.
+      - name: Install Ansible collections (pinned)
+        run: ansible-galaxy collection install -vvv -r molecule/default/collections.yml
+
       - name: Run Molecule
         run: molecule test
