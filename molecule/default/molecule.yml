@@ -52,3 +52,7 @@ provisioner:
   config_options:
     defaults:
       roles_path: "../../../"
+      # molecule-plugins docker destroy.yml (23.5.x) uses when: (lookup('env', 'HOME'));
+      # ansible-core 2.19+ requires boolean conditionals. Remove when on molecule>=25 +
+      # molecule-plugins>=25 (fixed upstream with `is truthy`).
+      allow_broken_conditionals: true
