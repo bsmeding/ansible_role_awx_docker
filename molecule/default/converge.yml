@@ -3,6 +3,10 @@
   hosts: all
   become: true
   vars:
+    # Docker daemon (GitHub runner) bind sources must use this host path; it matches
+    # the volume in molecule.yml. Keep custom Python under awx__host_root so it maps too.
+    awx__docker_bind_prefix: "{{ (lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | default(playbook_dir ~ '/../..', true)) }}/.molecule/awx-data"
+    custom_python_dir: "{{ awx__host_root }}/python"
     awx__port_http: 80
     awx__port_https: 443
     awx__network: 'test_awx_network'

@@ -143,7 +143,19 @@
           mode: "0664"
         - file: SECRET_KEY
           mode: "0600"
-        
+
+    # Bind-mount sources are resolved on the Docker daemon host. Inside Molecule (socket
+    # from a container), that is the runner — not the Ansible target filesystem — unless
+    # awx__docker_bind_prefix points at the host path that mirrors awx__host_root.
+    - name: Resolve paths for Docker bind mounts (daemon host)
+      ansible.builtin.set_fact:
+        _awx_docker_bind_pg: "{{ awx__postgres_data_dir | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+        _awx_docker_bind_cfg: "{{ awx__17_1_0_config_path | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+        _awx_docker_bind_projects: "{{ awx__project_data_dir | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+        _awx_docker_bind_redis_sock: "{{ awx__redis_socket_dir | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+        _awx_docker_bind_venv: "{{ custom_venv_dir | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+        _awx_docker_bind_python: "{{ custom_python_dir | regex_replace('^' ~ (awx__host_root | regex_escape), awx__docker_bind_prefix) }}"
+
     - name: Create a network for AWX
       community.docker.docker_network:
         name: "awx"
@@ -158,7 +170,7 @@
         env: "{{ awx__17_1_0_default_env | combine(awx__17_1_0_env_postgres) }}"
         volumes:
           - "/etc/passwd:/etc/passwd:ro"
-          - "{{ awx__postgres_data_dir }}/:/var/lib/postgresql/data:Z"
+          - "{{ _awx_docker_bind_pg }}/:/var/lib/postgresql/data:Z"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -173,8 +185,8 @@
         command:
           - "/usr/local/etc/redis/redis.conf"
         volumes:
-          - "{{ awx__17_1_0_config_path }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
-          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
+          - "{{ _awx_docker_bind_cfg }}/redis.conf:/usr/local/etc/redis/redis.conf:ro"
+          - "{{ _awx_docker_bind_redis_sock }}:/var/run/redis/:rw"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
 
@@ -193,13 +205,13 @@
           - "supervisor-socket:/var/run/supervisor"
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
-          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
-          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
-          - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
-          - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
-          - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
-          - "{{ custom_python_dir +':'+ custom_python_dir +':ro' }}"
+          - "{{ _awx_docker_bind_redis_sock }}:/var/run/redis/:rw"
+          - "{{ _awx_docker_bind_cfg }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
+          - "{{ _awx_docker_bind_cfg }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          - "{{ _awx_docker_bind_cfg }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          - "{{ _awx_docker_bind_projects +':/var/lib/awx/projects:rw' }}"
+          - "{{ _awx_docker_bind_venv +':'+ _awx_docker_bind_venv +':rw' }}"
+          - "{{ _awx_docker_bind_python +':'+ _awx_docker_bind_python +':ro' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"
@@ -220,14 +232,14 @@
           - "supervisor-socket:/var/run/supervisor"
           - "rsyslog-socket:/var/run/awx-rsyslog/"
           - "rsyslog-config:/var/lib/awx/rsyslog/"
-          - "{{ awx__redis_socket_dir }}:/var/run/redis/:rw"
-          - "{{ awx__17_1_0_config_path }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
-          - "{{ awx__17_1_0_config_path }}/environment.sh:/etc/tower/conf.d/environment.sh"
-          - "{{ awx__17_1_0_config_path }}/credentials.py:/etc/tower/conf.d/credentials.py"
-          - "{{ awx__17_1_0_config_path }}/nginx.conf:/etc/nginx/conf.g/default.conf:ro"
-          - "{{ awx__project_data_dir +':/var/lib/awx/projects:rw' }}"
-          - "{{ custom_venv_dir +':'+ custom_venv_dir +':rw' }}"
-          - "{{ custom_python_dir +':'+ custom_python_dir +':ro' }}"
+          - "{{ _awx_docker_bind_redis_sock }}:/var/run/redis/:rw"
+          - "{{ _awx_docker_bind_cfg }}/SECRET_KEY:/etc/tower/SECRET_KEY:ro"
+          - "{{ _awx_docker_bind_cfg }}/environment.sh:/etc/tower/conf.d/environment.sh"
+          - "{{ _awx_docker_bind_cfg }}/credentials.py:/etc/tower/conf.d/credentials.py"
+          - "{{ _awx_docker_bind_cfg }}/nginx.conf:/etc/nginx/conf.g/default.conf:ro"
+          - "{{ _awx_docker_bind_projects +':/var/lib/awx/projects:rw' }}"
+          - "{{ _awx_docker_bind_venv +':'+ _awx_docker_bind_venv +':rw' }}"
+          - "{{ _awx_docker_bind_python +':'+ _awx_docker_bind_python +':ro' }}"
           - "{{ awx__ca_trust_path +':/etc/pki/ca-trust/source/anchors:ro' }}"
         log_driver: "{{ awx__17_1_0_log_driver }}"
         log_options: "{{ awx__17_1_0_log_options }}"

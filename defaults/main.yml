@@ -10,6 +10,10 @@ awx__base_url: 'http://localhost'
 awx__dns_servers: "8.8.8.8,8.8.4.4"
 awx__validate_certs: false
 awx__host_root: '/opt/awx'
+# Paths passed to docker_container bind mounts must exist on the Docker *daemon* host.
+# Default matches awx__host_root (normal: Ansible runs on the same host as Docker).
+# Override for Molecule/docker-in-docker so mounts use the workspace path on the runner.
+awx__docker_bind_prefix: "{{ awx__host_root }}"
 awx__setting_awx_task_hostname: 'task'
 awx__setting_awx_web_hostname: 'web'
 
