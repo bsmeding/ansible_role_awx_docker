@@ -1,3 +1,8 @@
 ---
 roles:
   - src: bsmeding.docker
+collections:
+  # Pin to a known-good release to avoid intermittent Galaxy resolution errors
+  # on the latest community.docker metadata.
+  - name: community.docker
+    version: 4.8.1
