@@ -6,7 +6,7 @@ galaxy_info:
   role_name: awx_docker
   author: bsmeding
   description: Role to Install Ansible AWX (opensource Tower) in Docker container
-  company: "b@rtsmeding.nl"
+  company: "b@rtsmeding IT"
   license: "license (BSD, MIT)"
   min_ansible_version: '2.10'
   platforms:
