@@ -48,8 +48,9 @@ awx__17_1_0_redis_image: "redis"
 awx__force_run_migrate: false
 awx__17_1_0_default_env:
   TZ: "{{ container_time_zone | default('Europe/Paris') }}"
-  PUID: "{{ docker_uid|default(1040) }}"
-  PGID: "{{ docker_gid|default(1001) }}"
+  # community.docker requires string env values (integers fail validation).
+  PUID: "{{ docker_uid | default(1040) | string }}"
+  PGID: "{{ docker_gid | default(1001) | string }}"
   http_proxy: "{{ http_proxy | default('') }}"
   https_proxy: "{{ https_proxy | default('') }}"
   no_proxy: "{{ no_proxy | default('') }}"
