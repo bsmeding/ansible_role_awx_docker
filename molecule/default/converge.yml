@@ -20,33 +20,33 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
-      when: ansible_os_family == 'Debian'
+      when: ansible_facts['os_family'] == 'Debian'
       changed_when: false
 
+    # degraded returns rc 1 (message often on stderr); do not match only stdout.
     - name: Wait for systemd to complete initialization
       ansible.builtin.command: systemctl is-system-running
       register: systemctl_status
-      until: >
-        'running' in systemctl_status.stdout or
-        'degraded' in systemctl_status.stdout
-      retries: 30
-      delay: 5
-      when: ansible_service_mgr == 'systemd'
+      until: systemctl_status.rc | int in [0, 1]
+      retries: 15
+      delay: 3
+      when: ansible_facts['service_mgr'] == 'systemd'
       changed_when: false
-      failed_when: systemctl_status.rc > 1
+      # Do not set failed_when on rc>1: "starting" uses rc>1 and must be retried until running/degraded.
 
     - name: Check if Docker socket exists
-      stat:
+      ansible.builtin.stat:
         path: /var/run/docker.sock
       register: docker_socket
 
     - name: Ensure Docker socket permissions are correct
-      file:
+      ansible.builtin.file:
         path: /var/run/docker.sock
         mode: '0666'
-      when: docker_socket.stat.exists and docker_socket.stat.exists
+      when: docker_socket.stat.exists
 
   roles:
-    - role: bsmeding.docker
-      when: docker_socket.stat.exists and docker_socket.stat.exists
+    # bsmeding.docker is omitted here: its apt repo tasks are not idempotent under Molecule
+    # (second converge reports changed). Docker API access uses the mounted host socket;
+    # python3-docker is installed in prepare.yml.
     - role: bsmeding.awx_docker

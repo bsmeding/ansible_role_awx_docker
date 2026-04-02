@@ -1,6 +1,7 @@
 ---
-roles:
-  - src: bsmeding.docker
+# Molecule no longer pulls bsmeding.docker (see converge.yml). Install Docker on the
+# target yourself for real playbooks, or add a role here if you use dependency install.
+roles: []
 collections:
   # Keep in sync with molecule/default/collections.yml (Molecule + CI use that file).
   - name: community.docker

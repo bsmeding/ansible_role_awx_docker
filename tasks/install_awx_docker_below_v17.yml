@@ -8,7 +8,7 @@
 
 - name: Install RedHet prerequistics
   include_tasks: redhat_prereq.yml
-  when: "ansible_os_family == 'RedHat' and not skip_awx_install|bool"
+  when: ansible_facts['os_family'] == 'RedHat' and not skip_awx_install|bool
 
 - name: Install packages for OS
   ansible.builtin.package:

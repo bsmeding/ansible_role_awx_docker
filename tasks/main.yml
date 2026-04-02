@@ -5,7 +5,7 @@
   register: awx_playbook_already_run
 
 - name: Include OS-specific vars
-  include_vars: "{{ ansible_os_family }}_docker.yml"
+  include_vars: "{{ ansible_facts['os_family'] }}_docker.yml"
   when: not skip_awx_install|bool
 
 - name: Check AWX root dir is set
