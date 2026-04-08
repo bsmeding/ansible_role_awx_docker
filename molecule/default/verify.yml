@@ -1,4 +1,7 @@
 ---
+# AWX -p ports bind on the Docker daemon host. The Molecule instance runs with
+# etc_hosts host.docker.internal:host-gateway (molecule.yml) so checks here reach AWX.
+# Do not use http://localhost — nothing listens there for AWX inside the instance.
 - name: Verify - AWX is running
   hosts: all
   become: false
@@ -6,30 +9,29 @@
   tasks:
     - name: Include default vars
       ansible.builtin.include_vars:
-        dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
+        dir: "{{ playbook_dir }}/../../defaults"
         extensions:
           - "yml"
 
-    - name: Check that AWX is running
+    - name: Check that AWX responds (host.docker.internal = Docker host)
       ansible.builtin.uri:
-        url: "http://localhost:80"
-        return_content: true
+        url: "http://host.docker.internal:{{ awx__port_web_http }}/"
+        method: GET
+        status_code: [200, 301, 302, 401, 403]
+        follow_redirects: safe
       register: awx_output
-      failed_when: awx_output is failed or awx_output.status != 200
-      # or "'Welcome to our server' not in local_webserver_output.content"
+      retries: 30
+      delay: 10
+      until: awx_output is succeeded
 
-    - name: Show output
-      debug:
-        var: awx_output
-
-    - name: Verify awx container is running
+    - name: Verify awx web container exists and is running
       community.docker.docker_container_info:
-        name: "{{ awx__name }}"
+        name: "awx_{{ awx__setting_awx_web_hostname }}"
       register: awx_container_info
 
-    - name: Check awx container status
-      assert:
+    - name: Check awx web container status
+      ansible.builtin.assert:
         that:
           - awx_container_info.exists
-            - awx_container_info.container.State.Status == "running"
-        fail_msg: "AWX container is not running"
+          - awx_container_info.container.State.Status == "running"
+        fail_msg: "AWX web container is not running"
