@@ -31,19 +31,22 @@
           - awx_container_info.container.State.Status == "running"
         fail_msg: "AWX web container is not running"
 
-    # curl is usually present; python3 urllib is a fallback for minimal images.
+    # Use argv style to avoid shell-quoting/parsing issues in docker exec.
     - name: Check AWX HTTP inside web container (bypasses host port mapping)
       community.docker.docker_container_exec:
         container: "{{ awx_web_container_name }}"
         command:
-          - sh
-          - -c
-          - >-
-            curl -sfS --connect-timeout 5 --max-time 30 -o /dev/null
-            "http://127.0.0.1:{{ awx_container_http_port }}/"
-            || python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:{{ awx_container_http_port }}/", timeout=30)'
+          - curl
+          - -fsS
+          - --connect-timeout
+          - "5"
+          - --max-time
+          - "20"
+          - -o
+          - /dev/null
+          - "http://127.0.0.1:{{ awx_container_http_port }}/"
       register: awx_http_check
-      retries: 36
-      delay: 10
+      retries: 18
+      delay: 5
       until: awx_http_check.get('rc', awx_http_check.get('exit_code', 1)) == 0
       changed_when: false
