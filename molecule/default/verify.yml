@@ -1,7 +1,7 @@
 ---
-# AWX -p ports bind on the Docker daemon host. The Molecule instance runs with
-# etc_hosts host.docker.internal:host-gateway (molecule.yml) so checks here reach AWX.
-# Do not use http://localhost — nothing listens there for AWX inside the instance.
+# AWX publishes ports on the Docker daemon (GitHub runner). Probing from the Molecule
+# container via host.docker.internal often hits hairpin/NAT and ends in RST. Run the
+# HTTP check on the Ansible controller (runner) against 127.0.0.1 instead.
 - name: Verify - AWX is running
   hosts: all
   become: false
@@ -13,9 +13,9 @@
         extensions:
           - "yml"
 
-    - name: Check that AWX responds (host.docker.internal = Docker host)
+    - name: Check that AWX responds on published host port (runner localhost)
       ansible.builtin.uri:
-        url: "http://host.docker.internal:{{ awx__port_web_http }}/"
+        url: "http://127.0.0.1:{{ awx__port_web_http }}/"
         method: GET
         status_code: [200, 301, 302, 401, 403]
         follow_redirects: safe
@@ -23,6 +23,9 @@
       retries: 30
       delay: 10
       until: awx_output is succeeded
+      delegate_to: localhost
+      connection: local
+      run_once: true
 
     - name: Verify awx web container exists and is running
       community.docker.docker_container_info:
