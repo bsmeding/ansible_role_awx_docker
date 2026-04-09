@@ -1,7 +1,7 @@
 ---
-# AWX publishes ports on the Docker daemon (GitHub runner). Probing from the Molecule
-# container via host.docker.internal often hits hairpin/NAT and ends in RST. Run the
-# HTTP check on the Ansible controller (runner) against 127.0.0.1 instead.
+# Host-published ports (e.g. 9080→8052) are unreliable to probe from the runner or from
+# the Molecule instance on GitHub Actions (RST / hairpin). Validate AWX by hitting the
+# web container's nginx HTTP port from inside that container (matches role map ...:8052).
 - name: Verify - AWX is running
   hosts: all
   become: false
@@ -13,23 +13,15 @@
         extensions:
           - "yml"
 
-    - name: Check that AWX responds on published host port (runner localhost)
-      ansible.builtin.uri:
-        url: "http://127.0.0.1:{{ awx__port_web_http }}/"
-        method: GET
-        status_code: [200, 301, 302, 401, 403]
-        follow_redirects: safe
-      register: awx_output
-      retries: 30
-      delay: 10
-      until: awx_output is succeeded
-      delegate_to: localhost
-      connection: local
-      run_once: true
+    - name: Set verify facts (after defaults are loaded)
+      ansible.builtin.set_fact:
+        awx_web_container_name: "awx_{{ awx__setting_awx_web_hostname }}"
+        # Internal HTTP port in ansible/awx image (see install_awx_docker_17_1_0.yml ports).
+        awx_container_http_port: 8052
 
     - name: Verify awx web container exists and is running
       community.docker.docker_container_info:
-        name: "awx_{{ awx__setting_awx_web_hostname }}"
+        name: "{{ awx_web_container_name }}"
       register: awx_container_info
 
     - name: Check awx web container status
@@ -38,3 +30,20 @@
           - awx_container_info.exists
           - awx_container_info.container.State.Status == "running"
         fail_msg: "AWX web container is not running"
+
+    # curl is usually present; python3 urllib is a fallback for minimal images.
+    - name: Check AWX HTTP inside web container (bypasses host port mapping)
+      community.docker.docker_container_exec:
+        container: "{{ awx_web_container_name }}"
+        command:
+          - sh
+          - -c
+          - >-
+            curl -sfS --connect-timeout 5 --max-time 30 -o /dev/null
+            "http://127.0.0.1:{{ awx_container_http_port }}/"
+            || python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:{{ awx_container_http_port }}/", timeout=30)'
+      register: awx_http_check
+      retries: 36
+      delay: 10
+      until: awx_http_check.rc == 0
+      changed_when: false
