@@ -45,5 +45,5 @@
       register: awx_http_check
       retries: 36
       delay: 10
-      until: awx_http_check.rc == 0
+      until: awx_http_check.get('rc', awx_http_check.get('exit_code', 1)) == 0
       changed_when: false
