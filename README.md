@@ -1,6 +1,8 @@
 ---
 # Ansible AWX install role
 
+PLEASE NOT THAT THIS ROLE IS DISCONTINUED, PLEASE MOVE TO ANOTHER ORGESTRATION TOOL AS REDHAT DOENST UPDATE AWX ANYMORE
+
 ![test status](https://github.com/bsmeding/ansible_role_awx_docker/actions/workflows/ci.yml/badge.svg) 
 Role is tested on, Ubuntu with Docker installed via my role bsmeding.docker on Linux distribution.
 
