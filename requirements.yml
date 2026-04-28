@@ -5,6 +5,6 @@ roles: []
 collections:
   # Keep in sync with molecule/default/collections.yml (Molecule + CI use that file).
   - name: community.docker
-    version: 4.8.7
+    version: 5.2.0
   - name: ansible.posix
     version: 1.6.2
